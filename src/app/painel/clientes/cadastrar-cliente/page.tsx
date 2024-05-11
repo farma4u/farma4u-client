@@ -22,9 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { sendRequest } from '@/lib/sendRequest'
+import { sendHotsiteRequest } from '@/lib/sendHotsiteRequest'
 import { STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
 import { transformCurrencyStringToNumber, formatCurrency, applyCurrencyMaskReturningString } from '@/lib/utils'
+import { useState } from 'react'
 
 const newClientFormSchema = z.object({
   cnpj: z
@@ -78,10 +80,22 @@ const newClientFormSchema = z.object({
   statusId: z.coerce
     .number({ required_error: 'O campo Status é obrigatório.' })
     .gte(1, { message: 'O campo Status deve 1 (ativo), 2 (inativo) ou 3 (excluído).' })
-    .lte(3, { message: 'O campo Status deve 1 (ativo), 2 (inativo) ou 3 (excluído).' })
+    .lte(3, { message: 'O campo Status deve 1 (ativo), 2 (inativo) ou 3 (excluído).' }),
+  urlSite: z
+    .string({ required_error: 'O campo URL Site é obrigatório.' })
+    .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
+  primaryColor: z
+    .string({ required_error: 'O campo Cor Primária é obrigatório.' })
+    .min(3, { message: 'O campo Cor Primária deve ter pelo menos 3 caracteres.' })
+    .max(7, { message: 'O campo Cor Primária deve ter no máximo 7 caracteres.' }),
+  secondColor: z 
+    .string({ required_error: 'O campo Cor Secundária é obrigatório.' })
+    .min(3, { message: 'O campo Cor Secundária deve ter pelo menos 3 caracteres.' })
+    .max(7, { message: 'O campo Cor Secundária deve ter no máximo 7 caracteres.' }),
 })
 
 type NewClientFormSchema = z.infer<typeof newClientFormSchema>
+
 
 const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   cnpj: '',
@@ -98,7 +112,11 @@ const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   lumpSum: 0,
   unitValue: 0,
   contractUrl: '',
-  statusId: STATUS.Ativo
+  statusId: STATUS.Ativo,
+  urlSite: '',
+  primaryColor: '',
+  secondColor: '',
+
 }
 
 export default function RegisterClient() {
@@ -110,6 +128,7 @@ export default function RegisterClient() {
 
   const { back } = useRouter()
   const { toast } = useToast()
+  const [file, setFile] = useState('');
 
   const formatNewClientData = (newClientData: NewClientFormSchema): NewClientFormSchema => ({
     ...newClientData,
@@ -136,6 +155,17 @@ export default function RegisterClient() {
         variant: 'destructive'
       })
     } else {
+        const formData = new FormData()
+        formData.append('id', response.data.clientId);
+        formData.append('image', file)
+        formData.append('urlSite', newClientData.urlSite)
+        formData.append('primaryColor', newClientData.primaryColor)
+        formData.append('secondColor', newClientData.secondColor)
+        const hotsiteResponse = await sendHotsiteRequest({
+          endpoint: '/addSite',
+          method: 'POST',
+          data: formData
+        })
       toast({
         description: response.message
       })
@@ -383,6 +413,34 @@ export default function RegisterClient() {
                 form.formState.errors.state
                   && <span className="text-red-500 text-xs">{form.formState.errors.state.message}</span>
               }
+            </InputContainer>
+          </DetailsRow>
+
+          <DetailsRow>
+            <InputContainer size="w-1/5">
+              <Label htmlFor="urlSite">Url Site</Label>
+              <Input className="bg-white" { ...form.register("urlSite") } />
+              {
+                form.formState.errors.urlSite && <span className="text-red-500 text-xs">{form.formState.errors.urlSite.message}</span>
+              }
+            </InputContainer>
+            <InputContainer size="w-1/4">
+              <Label htmlFor="primaryColor">Cor Primária</Label>
+              <Input className="bg-white" { ...form.register("primaryColor") } />
+              {
+                form.formState.errors.primaryColor && <span className="text-red-500 text-xs">{form.formState.errors.primaryColor.message}</span>
+              }
+            </InputContainer>
+            <InputContainer size="w-1/4">
+              <Label htmlFor="secondColor">Cor Secundária</Label>
+              <Input className="bg-white" { ...form.register("secondColor") } />
+              {
+                form.formState.errors.secondColor && <span className="text-red-500 text-xs">{form.formState.errors.secondColor.message}</span>
+              }
+            </InputContainer>
+            <InputContainer size="w-1/3">
+              <Label htmlFor="image">Imagem</Label>
+              <Input className="bg-white"  onChange={e => setFile(e.target.files[0])} type='file' />
             </InputContainer>
           </DetailsRow>
 
