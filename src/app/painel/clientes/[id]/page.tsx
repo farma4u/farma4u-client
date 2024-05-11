@@ -34,6 +34,7 @@ import { sendRequest } from '@/lib/sendRequest'
 import { Separator } from '@/components/ui/separator'
 import { STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
+import { sendHotsiteRequest } from '@/lib/sendHotsiteRequest'
 
 
 interface IClientDetailed {
@@ -55,9 +56,16 @@ interface IClientDetailed {
   contractUrl: string
   status: string
   createdAt: string
+  urlSite: string
+  primaryColor: string
+  secondColor: string
+  image: string
 }
 
+
+
 type CLientDetailedFromAPI = Omit<IClientDetailed, 'lumpSum' | 'unitValue' | 'totalSavings' | 'status'> & { lumpSum: number, unitValue: number, totalSavings: number, statusId: number }
+
 
 const updateClientFormSchema = z.object({
   corporateName: z
@@ -111,7 +119,19 @@ const updateClientFormSchema = z.object({
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
-    .optional()
+    .optional(),
+  urlSite: z
+    .string({ required_error: 'O campo URL Site é obrigatório.' })
+    .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
+  primaryColor: z
+    .string({ required_error: 'O campo Cor Primária é obrigatório.' })
+    .min(3, { message: 'O campo Cor Primária deve ter pelo menos 3 caracteres.' })
+    .max(7, { message: 'O campo Cor Primária deve ter no máximo 7 caracteres.' }),
+  secondColor: z 
+    .string({ required_error: 'O campo Cor Secundária é obrigatório.' })
+    .min(3, { message: 'O campo Cor Secundária deve ter pelo menos 3 caracteres.' })
+    .max(7, { message: 'O campo Cor Secundária deve ter no máximo 7 caracteres.' }),
+
 })
 
 type UpdateClientFormSchema = z.infer<typeof updateClientFormSchema>
@@ -129,7 +149,11 @@ const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   financePhoneNumber: '',
   lumpSum: 0,
   unitValue: 0,
-  contractUrl: ''
+  contractUrl: '',
+  urlSite: '',
+  primaryColor: '',
+  secondColor: '',
+  image: ''
 }
 
 export default function ClientDetailsPage() {
@@ -138,6 +162,7 @@ export default function ClientDetailsPage() {
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
+  const [file, setFile] = useState('');
 
   const form = useForm<UpdateClientFormSchema>({
     mode: 'onBlur',
@@ -178,7 +203,11 @@ export default function ClientDetailsPage() {
     form.setValue('address', client.address)
     form.setValue('state', client.state)
     form.setValue('city', client.city)
+    form.setValue('primaryColor', client.primaryColor)
+    form.setValue('secondColor', client.secondColor)
+    form.setValue('urlSite', client.urlSite)
   }
+
 
   const fetchClient = async (id: string) => {
     const response = await sendRequest<{ client: CLientDetailedFromAPI }>({
@@ -193,9 +222,22 @@ export default function ClientDetailsPage() {
       })
 
       setClientDetailed(null)
-
       return
     }
+
+    const hotSiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
+      endpoint: `/find/${response.data.client.id}`,
+      method: 'GET',
+    }).then((hotsiteDataResponse) => {
+      if (hotsiteDataResponse.error)
+        return
+      
+      response.data.client.urlSite      = hotsiteDataResponse.data.urlSite;
+      response.data.client.primaryColor = hotsiteDataResponse.data.primaryColor;
+      response.data.client.secondColor  = hotsiteDataResponse.data.secondColor;
+      response.data.client.image        = hotsiteDataResponse.data.image;
+    })
+    
 
     fillUpdateForm(response.data.client)
 
@@ -226,9 +268,20 @@ export default function ClientDetailsPage() {
         description: response.message,
         variant: 'destructive'
       })
-
       return
     }
+
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('urlSite', client.urlSite)
+    formData.append('primaryColor', client.primaryColor)
+    formData.append('secondColor', client.secondColor)
+
+    const hotsiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
+      endpoint: `/updateSite/${params.id}`,
+      method: 'PUT',
+      data: formData
+    })
 
     fetchClient(params.id as string)
   }
@@ -280,6 +333,7 @@ export default function ClientDetailsPage() {
   }
 
   const deleteClient = async (id: string) => {
+
     const response = await sendRequest({
       endpoint: `/client/${id}/delete`,
       method: 'PATCH',
@@ -293,6 +347,11 @@ export default function ClientDetailsPage() {
 
       return
     }
+
+    const hotSiteResponse = await sendHotsiteRequest({
+      endpoint: `/delete/${id}`,
+      method: 'PATCH',
+    })
 
     toast({
       description: response.message,
@@ -601,6 +660,36 @@ export default function ClientDetailsPage() {
                           }
                         </InputContainer>
                       </DetailsRow>
+                      <DetailsRow>
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="urlSite">Url Site</Label>
+                          <Input className="bg-white" { ...form.register("urlSite") } />
+                          {
+                            form.formState.errors.urlSite && <span className="text-red-500 text-xs">{form.formState.errors.urlSite.message}</span>
+                          }
+                        </InputContainer>
+                        
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="image">Imagem</Label>
+                          <Input className="bg-white"  onChange={e => setFile(e.target.files[0])} type='file' />
+                        </InputContainer>
+                      </DetailsRow>
+                      <DetailsRow>
+                      <InputContainer size="w-1/2">
+                          <Label htmlFor="primaryColor">Cor Primária</Label>
+                          <Input className="bg-white" { ...form.register("primaryColor") } />
+                          {
+                            form.formState.errors.primaryColor && <span className="text-red-500 text-xs">{form.formState.errors.primaryColor.message}</span>
+                          }
+                        </InputContainer>
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="secondColor">Cor Secundária</Label>
+                          <Input className="bg-white" { ...form.register("secondColor") } />
+                          {
+                            form.formState.errors.secondColor && <span className="text-red-500 text-xs">{form.formState.errors.secondColor.message}</span>
+                          }
+                        </InputContainer>
+                      </DetailsRow>
                       <AlertDialogFooter>
                         <AlertDialogCancel type="button">Cancelar</AlertDialogCancel>
                         <AlertDialogAction type="submit" disabled={!form.formState.isValid}>
@@ -692,6 +781,13 @@ export default function ClientDetailsPage() {
           <DetailsField label="Cidade" value={clientDetailed?.city} width="min-w-60" />
           <DetailsField label="Estado" value={clientDetailed?.state} width="min-w-28" />
         </DetailsRow>
+
+        <DetailsRow>
+        <DetailsField label="Url Site" value={clientDetailed?.urlSite} />
+          <DetailsField label="Cor Primária" value={clientDetailed?.primaryColor}  />
+          <DetailsField label="Cor Secundária" value={clientDetailed?.secondColor}  />
+          <DetailsField label="Imagem" type="file" value={clientDetailed?.image} />
+          </DetailsRow>
       </div>
     </DashboardLayout>
   )
