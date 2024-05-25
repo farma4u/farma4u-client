@@ -62,9 +62,17 @@ interface IClientDetailed {
   image: string
 }
 
+interface IHotsiteDetailed {
+  urlSite: string
+  primaryColor: string
+  secondColor: string
+  image: string
+}
+
 
 
 type CLientDetailedFromAPI = Omit<IClientDetailed, 'lumpSum' | 'unitValue' | 'totalSavings' | 'status'> & { lumpSum: number, unitValue: number, totalSavings: number, statusId: number }
+type HotsiteDetailedFromAPI = Omit<IHotsiteDetailed, 'createdAt' | 'id' | 'updatedAt' > & { createdAt: Date, id: string, updatedAt: Date}
 
 
 const updateClientFormSchema = z.object({
@@ -131,7 +139,8 @@ const updateClientFormSchema = z.object({
     .string({ required_error: 'O campo Cor Secundária é obrigatório.' })
     .min(3, { message: 'O campo Cor Secundária deve ter pelo menos 3 caracteres.' })
     .max(7, { message: 'O campo Cor Secundária deve ter no máximo 7 caracteres.' }),
-
+  image: z
+    .string()
 })
 
 type UpdateClientFormSchema = z.infer<typeof updateClientFormSchema>
@@ -156,8 +165,11 @@ const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   image: ''
 }
 
+
+
 export default function ClientDetailsPage() {
-  const [clientDetailed, setClientDetailed] = useState<IClientDetailed | null>(null)
+  const [clientDetailed, setClientDetailed] = useState<IClientDetailed | null>(null);
+  const [hotsiteDetailed, setHotsiteDetailed] = useState<IHotsiteDetailed | null>(null);
   const [fileSelected, setFileSelected] = useState<File | null>(null)
   const params = useParams()
   const { push } = useRouter()
@@ -169,6 +181,8 @@ export default function ClientDetailsPage() {
     defaultValues: UPDATE_CLIENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(updateClientFormSchema)
   })
+
+
 
   const formatClientDetailed = (client: CLientDetailedFromAPI) => ({
     ...client,
@@ -186,7 +200,7 @@ export default function ClientDetailsPage() {
     unitValue: client.unitValue === 0 ? '-' : formatCurrency(client.unitValue),
     totalSavings: formatCurrency(client.totalSavings),
     status: STATUS[client.statusId],
-    createdAt: formatDateTime(client.createdAt)
+    createdAt: formatDateTime(client.createdAt),
   })
 
   const fillUpdateForm = (client: CLientDetailedFromAPI) => {
@@ -203,9 +217,13 @@ export default function ClientDetailsPage() {
     form.setValue('address', client.address)
     form.setValue('state', client.state)
     form.setValue('city', client.city)
+  }
+
+  const fillUpdateHotsiteForm = (client: IHotsiteDetailed) => {
+    form.setValue('urlSite', client.urlSite)
     form.setValue('primaryColor', client.primaryColor)
     form.setValue('secondColor', client.secondColor)
-    form.setValue('urlSite', client.urlSite)
+    form.setValue('image', client.image)
   }
 
 
@@ -225,25 +243,23 @@ export default function ClientDetailsPage() {
       return
     }
 
-    const hotSiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
+    const hotsiteResponse = await sendHotsiteRequest<HotsiteDetailedFromAPI>({
       endpoint: `/find/${response.data.client.id}`,
       method: 'GET',
-    }).then((hotsiteDataResponse) => {
-      if (hotsiteDataResponse.error)
-        return
-      
-      response.data.client.urlSite      = hotsiteDataResponse.data.urlSite;
-      response.data.client.primaryColor = hotsiteDataResponse.data.primaryColor;
-      response.data.client.secondColor  = hotsiteDataResponse.data.secondColor;
-      response.data.client.image        = hotsiteDataResponse.data.image;
     })
+    if (hotsiteResponse.error){
+      console.log(hotsiteResponse.error);
+      return
+    }
     
-
-    fillUpdateForm(response.data.client)
+    
+    fillUpdateForm(response.data.client);
+    fillUpdateHotsiteForm(hotsiteResponse.data);
 
     const formattedClient = formatClientDetailed(response.data.client)
 
-    setClientDetailed(formattedClient)
+    setClientDetailed(formattedClient);
+    setHotsiteDetailed(hotsiteResponse.data);
   }
 
   const formatUpdatedClientData = (clientData: UpdateClientFormSchema): UpdateClientFormSchema => ({
@@ -282,10 +298,11 @@ export default function ClientDetailsPage() {
       method: 'PUT',
       data: formData
     })
-
+    
     fetchClient(params.id as string)
   }
 
+ 
   const activateClient = async (id: string) => {
     const response = await sendRequest({
       endpoint: `/client/${id}/activate`,
@@ -505,7 +522,7 @@ export default function ClientDetailsPage() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogTitle>Editar Cliente</AlertDialogTitle>
-                  <Form { ...form }>
+                  <Form { ...form}>
                     <form
                       className='flex flex-col gap-4'
                       onSubmit={form.handleSubmit((data) => updateClient(data))}
@@ -671,7 +688,7 @@ export default function ClientDetailsPage() {
                         
                         <InputContainer size="w-1/2">
                           <Label htmlFor="image">Imagem</Label>
-                          <Input className="bg-white"  onChange={e => setFile(e.target.files[0])} type='file' />
+                          <Input className="bg-white"  onChange={(e: React.ChangeEvent<any>) => setFile(e.target.files[0])} type='file' />
                         </InputContainer>
                       </DetailsRow>
                       <DetailsRow>
@@ -783,11 +800,11 @@ export default function ClientDetailsPage() {
         </DetailsRow>
 
         <DetailsRow>
-        <DetailsField label="Url Site" value={clientDetailed?.urlSite} />
-          <DetailsField label="Cor Primária" value={clientDetailed?.primaryColor}  />
-          <DetailsField label="Cor Secundária" value={clientDetailed?.secondColor}  />
-          <DetailsField label="Imagem" type="file" value={clientDetailed?.image} />
-          </DetailsRow>
+          <DetailsField label="Url Site" value={hotsiteDetailed?.urlSite} />
+          <DetailsField label="Cor Primária" value={hotsiteDetailed?.primaryColor}  />
+          <DetailsField label="Cor Secundária" value={hotsiteDetailed?.secondColor}  />
+          <DetailsField label="Imagem" value={hotsiteDetailed?.image}/>
+        </DetailsRow>
       </div>
     </DashboardLayout>
   )

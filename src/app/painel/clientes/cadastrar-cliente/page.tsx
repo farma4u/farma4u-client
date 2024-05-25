@@ -155,8 +155,9 @@ export default function RegisterClient() {
         variant: 'destructive'
       })
     } else {
-        const formData = new FormData()
-        formData.append('id', response.data.clientId);
+        const formData = new FormData();
+        const responseData:any  =  response.data;
+        formData.append('id', responseData.clientId);
         formData.append('image', file)
         formData.append('urlSite', newClientData.urlSite)
         formData.append('primaryColor', newClientData.primaryColor)
@@ -440,7 +441,7 @@ export default function RegisterClient() {
             </InputContainer>
             <InputContainer size="w-1/3">
               <Label htmlFor="image">Imagem</Label>
-              <Input className="bg-white"  onChange={e => setFile(e.target.files[0])} type='file' />
+              <Input className="bg-white"  onChange={(e: React.ChangeEvent<any>) => setFile(e.target.files[0])} type='file' />
             </InputContainer>
           </DetailsRow>
 
