@@ -19,7 +19,7 @@ export const sendHotsiteRequest = async <D>({
   method
 }: SendRequestParams): Promise<SuccessResponse<D> | FailResponse> => {
   try {
-    const response = await httpHotsiteClient(`/Hotsite${endpoint}`, {
+    const response = await httpHotsiteClient(`${endpoint}`, {
       data,
       headers,
       method,

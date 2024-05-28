@@ -243,6 +243,10 @@ export default function ClientDetailsPage() {
       return
     }
 
+    fillUpdateForm(response.data.client);
+    const formattedClient = formatClientDetailed(response.data.client)
+    setClientDetailed(formattedClient);
+
     const hotsiteResponse = await sendHotsiteRequest<HotsiteDetailedFromAPI>({
       endpoint: `/find/${response.data.client.id}`,
       method: 'GET',
@@ -252,13 +256,7 @@ export default function ClientDetailsPage() {
       return
     }
     
-    
-    fillUpdateForm(response.data.client);
     fillUpdateHotsiteForm(hotsiteResponse.data);
-
-    const formattedClient = formatClientDetailed(response.data.client)
-
-    setClientDetailed(formattedClient);
     setHotsiteDetailed(hotsiteResponse.data);
   }
 
@@ -272,7 +270,6 @@ export default function ClientDetailsPage() {
 
   const updateClient = async (client: UpdateClientFormSchema) => {
     const formattedClient = formatUpdatedClientData(client)
-
     const response = await sendRequest<{ client: CLientDetailedFromAPI }>({
       endpoint: `/client/${params.id}`,
       method: 'PATCH',
@@ -287,11 +284,29 @@ export default function ClientDetailsPage() {
       return
     }
 
+    const hotsiteGetResponse = await sendHotsiteRequest<HotsiteDetailedFromAPI>({
+      endpoint: `/find/${params.id}`,
+      method: 'GET',
+    });
+
     const formData = new FormData()
     formData.append('image', file)
     formData.append('urlSite', client.urlSite)
     formData.append('primaryColor', client.primaryColor)
-    formData.append('secondColor', client.secondColor)
+    formData.append('secondColor', client.secondColor);
+
+    
+    if (hotsiteGetResponse){
+      formData.append('id', String(params.id))
+      const hotsiteResponse = await sendHotsiteRequest({
+        endpoint: '/addSite',
+        method: 'POST',
+        data: formData
+      })
+
+      fetchClient(params.id as string);
+      return
+    }
 
     const hotsiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
       endpoint: `/updateSite/${params.id}`,
