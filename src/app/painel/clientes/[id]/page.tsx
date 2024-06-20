@@ -299,8 +299,8 @@ export default function ClientDetailsPage() {
     if (hotsiteGetResponse){
       formData.append('id', String(params.id))
       const hotsiteResponse = await sendHotsiteRequest({
-        endpoint: '/addSite',
-        method: 'POST',
+        endpoint:  `/updateSite/${params.id}`,
+        method: 'PUT',
         data: formData
       })
 
@@ -309,8 +309,8 @@ export default function ClientDetailsPage() {
     }
 
     const hotsiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
-      endpoint: `/updateSite/${params.id}`,
-      method: 'PUT',
+      endpoint: '/addSite',
+      method: 'POST',
       data: formData
     })
     
