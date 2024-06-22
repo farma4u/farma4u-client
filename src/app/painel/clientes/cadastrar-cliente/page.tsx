@@ -63,16 +63,22 @@ const newClientFormSchema = z.object({
   financePhoneNumber: z
     .string({ required_error: 'O campo Telefone do Financeiro é obrigatório.' })
     .min(10, { message: 'O campo Telefone do Financeiro deve ter pelo menos 10 caracteres.' }),
-  lumpSum: z.coerce
-    .number({ required_error: 'O campo Valor do Boleto é obrigatório.' })
-    .gte(0, { message: 'O campo Valor do Boleto deve ser maior ou igual a 0.' })
-    .optional()
-    .transform(value => Math.floor(value || 0)),
-  unitValue: z.coerce
-    .number({ required_error: 'O campo Valor Unitário é obrigatório.' })
-    .gte(0, { message: 'O campo Valor Unitário deve ser maior ou igual a 0.' })
-    .optional()
-    .transform(value => Math.floor(value || 0)),
+  // lumpSum: z.coerce
+  //   .number({ required_error: 'O campo Valor do Boleto é obrigatório.' })
+  //   .gte(0, { message: 'O campo Valor do Boleto deve ser maior ou igual a 0.' })
+  //   .optional()
+  //   .transform(value => Math.floor(value || 0)),
+  lumpSum: z
+    .string({ required_error: 'O campo Valor do Boleto é obrigatório.' })
+    .optional(),
+  // unitValue: z.coerce
+  //   .number({ required_error: 'O campo Valor Unitário é obrigatório.' })
+  //   .gte(0, { message: 'O campo Valor Unitário deve ser maior ou igual a 0.' })
+  //   .optional()
+  //   .transform(value => Math.floor(value || 0)),
+  unitValue: z
+    .string({ required_error: 'O campo Valor Unitário é obrigatório.' })
+    .optional(),
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
@@ -96,6 +102,8 @@ const newClientFormSchema = z.object({
 
 type NewClientFormSchema = z.infer<typeof newClientFormSchema>
 
+type NewClientFormSchemaToSendToAPI = Omit<NewClientFormSchema, 'unitValue' | 'lumpSum'> & { unitValue: number, lumpSum: number }
+
 
 const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   cnpj: '',
@@ -109,8 +117,8 @@ const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   managerPhoneNumber: '',
   managerEmail: '',
   financePhoneNumber: '',
-  lumpSum: 0,
-  unitValue: 0,
+  lumpSum: '0',
+  unitValue: '0',
   contractUrl: '',
   statusId: STATUS.Ativo,
   urlSite: '',
@@ -120,6 +128,9 @@ const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
 }
 
 export default function RegisterClient() {
+  const [lumpSum, setLumpSum] = useState<string>('')
+  const [unitValue, setUnitValue] = useState<string>('')
+
   const form = useForm<NewClientFormSchema>({
     mode: 'onBlur',
     defaultValues: NEW_CLIENT_FORM_DEFAULT_VALUES,
@@ -130,20 +141,23 @@ export default function RegisterClient() {
   const { toast } = useToast()
   const [file, setFile] = useState('');
 
-  const formatNewClientData = (newClientData: NewClientFormSchema): NewClientFormSchema => ({
+  const formatNewClientData = (newClientData: NewClientFormSchema): NewClientFormSchemaToSendToAPI => ({
     ...newClientData,
     cnpj: newClientData.cnpj
       .replaceAll('.', '').replace('/', '').replace('-', '').replaceAll('_', ''),
     managerPhoneNumber: newClientData.managerPhoneNumber
       .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
     financePhoneNumber: newClientData.financePhoneNumber
-      .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', '')
+      .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
+    unitValue: transformCurrencyStringToNumber(unitValue),
+    lumpSum: transformCurrencyStringToNumber(lumpSum),
   })
 
   const postClient = async (newClientData: NewClientFormSchema) => {
+    console.log(newClientData)
     const formattedNewClientData = formatNewClientData(newClientData)
     
-    const response = await sendRequest({
+    const response = await sendRequest<NewClientFormSchemaToSendToAPI>({
       endpoint: '/client',
       method: 'POST',
       data: formattedNewClientData
@@ -295,8 +309,9 @@ export default function RegisterClient() {
               <Label htmlFor="lumpSum">Valor do Boleto</Label>
               <Input
                 className="bg-white"
-                type="number"
                 { ...form.register("lumpSum") }
+                onChange={(e) => setLumpSum(applyCurrencyMaskReturningString(e.target.value))}
+                value={lumpSum}
               />
               {
                 form.formState.errors.lumpSum
@@ -322,8 +337,9 @@ export default function RegisterClient() {
               <Label htmlFor="unitValue">Valor Unitário</Label>
               <Input
                 className="bg-white"
-                type="number"
                 { ...form.register("unitValue") }
+                onChange={(e) => setUnitValue(applyCurrencyMaskReturningString(e.target.value))}
+                value={unitValue}
               />
               {
                 form.formState.errors.unitValue
