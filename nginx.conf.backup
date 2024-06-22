@@ -114,10 +114,10 @@ server {
 
 server {
   listen 80;
-  server_name www.farma4u.com.br;
+  server_name farma4u.com.br www.farma4u.com.br;
 
-  location / {
-    proxy_pass http://localhost:5000;
+  location /api {
+    proxy_pass http://localhost:5001;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -125,8 +125,8 @@ server {
     proxy_cache_bypass $http_upgrade;
   }
 
-  location /api {
-    proxy_pass http://localhost:5001;
+  location / {
+    proxy_pass http://localhost:5000;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -139,8 +139,8 @@ server {
   listen 80;
   server_name sistema.farma4u.com.br;
 
-  location / {
-    proxy_pass http://localhost:3000;
+  location /api {
+    proxy_pass http://localhost:4000;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -148,8 +148,8 @@ server {
     proxy_cache_bypass $http_upgrade;
   }
 
-  location /api {
-    proxy_pass http://localhost:4000;
+  location / {
+    proxy_pass http://localhost:3000;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';

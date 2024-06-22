@@ -56,13 +56,13 @@ const newClientFormSchema = z.object({
     .min(3, {message: 'O campo Nome do Responsável deve ter pelo menos 3 caracteres.'}),
   managerPhoneNumber: z
     .string({ required_error: 'O campo Telefone do Responsável é obrigatório.' })
-    .min(11, { message: 'O campo Telefone do Responsável deve ter pelo menos 11 caracteres.' }),
+    .min(10, { message: 'O campo Telefone do Responsável deve ter pelo menos 10 caracteres.' }),
   managerEmail: z
     .string({ required_error: 'O campo E-mail do Responsável é obrigatório.' })
     .email({ message: 'O campo E-mail do Responsável deve ser um e-mail válido.' }),
   financePhoneNumber: z
     .string({ required_error: 'O campo Telefone do Financeiro é obrigatório.' })
-    .min(11, { message: 'O campo Telefone do Financeiro deve ter pelo menos 11 caracteres.' }),
+    .min(10, { message: 'O campo Telefone do Financeiro deve ter pelo menos 10 caracteres.' }),
   lumpSum: z.coerce
     .number({ required_error: 'O campo Valor do Boleto é obrigatório.' })
     .gte(0, { message: 'O campo Valor do Boleto deve ser maior ou igual a 0.' })
@@ -364,7 +364,7 @@ export default function RegisterClient() {
               <Label htmlFor="managerPhoneNumber">Telefone do Responsável</Label>
               <InputMask
                 className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                mask="(99) 99999-9999"
+                mask="(99) 999999999"
                 { ...form.register("managerPhoneNumber",) }
               />
               {
@@ -376,7 +376,7 @@ export default function RegisterClient() {
               <Label htmlFor="financePhoneNumber">Telefone do Financeiro</Label>
               <InputMask
                 className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                mask="(99) 99999-9999"
+                mask="(99) 999999999"
                 { ...form.register("financePhoneNumber",) }
               />
               {
