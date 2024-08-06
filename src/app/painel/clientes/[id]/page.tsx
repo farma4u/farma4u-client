@@ -296,7 +296,7 @@ export default function ClientDetailsPage() {
     formData.append('secondColor', client.secondColor);
 
     
-    if (hotsiteGetResponse){
+    if (hotsiteGetResponse.error !== true){
       formData.append('id', String(params.id))
       const hotsiteResponse = await sendHotsiteRequest({
         endpoint:  `/updateSite/${params.id}`,
