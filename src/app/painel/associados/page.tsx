@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { applyCnpjMask, applyCpfMask, captalize, formatDateTime, removeCnpjMask } from '@/lib/utils'
+import { applyCnpjMask, applyCpfMask, captalize, formatDateTime, removeCnpjMask, removeCpfMask } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DataTable } from '../../../components/DataTable'
@@ -157,8 +157,9 @@ export default function MembersPage() {
     const query = new URLSearchParams()
 
     const clientCnpjWithoutMask = removeCnpjMask(clientCnpj)
+    const memberCpfWithoutMask = removeCpfMask(cpf)
 
-    if (cpf) query.append('cpf', cpf)
+    if (cpf) query.append('cpf', memberCpfWithoutMask)
     if (name) query.append('name', name)
     if (clientCnpj) query.append('client-cnpj', clientCnpjWithoutMask)
     if (statusId) query.append('status-id', statusId)
