@@ -294,20 +294,19 @@ export default function ClientDetailsPage() {
     formData.append('urlSite', client.urlSite)
     formData.append('primaryColor', client.primaryColor)
     formData.append('secondColor', client.secondColor);
-
     
-    if (hotsiteGetResponse){
-      formData.append('id', String(params.id))
+    if (!hotsiteGetResponse.error){
       const hotsiteResponse = await sendHotsiteRequest({
         endpoint:  `/updateSite/${params.id}`,
         method: 'PUT',
         data: formData
       })
-
+      
       fetchClient(params.id as string);
       return
     }
-
+    
+    formData.append('id', String(params.id));
     const hotsiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
       endpoint: '/addSite',
       method: 'POST',
