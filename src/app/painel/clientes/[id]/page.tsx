@@ -846,6 +846,14 @@ export default function ClientDetailsPage() {
           <DetailsField label="Estado" value={clientDetailed?.state} width="min-w-28" />
         </DetailsRow>
 
+        <Separator />
+
+        <DetailsRow>
+          <DetailsField label="Tem SGA" value={clientDetailed?.isHinova ? 'Sim' : 'Não'} width="min-w-52 w-full" />
+          <DetailsField label="Token do SGA" value={clientDetailed?.hinovaToken} width="min-w-52 w-full" />
+        </DetailsRow>
+        <Separator />
+
         <DetailsRow>
           <DetailsField label="Url Site" value={hotsiteDetailed?.urlSite} />
           <DetailsField label="Cor Primária" value={hotsiteDetailed?.primaryColor}  />
