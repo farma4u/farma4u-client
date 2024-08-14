@@ -90,6 +90,11 @@ const newClientFormSchema = z.object({
   urlSite: z
     .string({ required_error: 'O campo URL Site é obrigatório.' })
     .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
+  isHinova: z
+    .string({ required_error: 'O campo Tem SGA é obrigatório.' }),
+  hinovaToken: z
+    .string({ required_error: 'O campo TOKEN SGA é obrigatório.' })
+    .optional(),
   primaryColor: z
     .string({ required_error: 'O campo Cor Primária é obrigatório.' })
     .min(3, { message: 'O campo Cor Primária deve ter pelo menos 3 caracteres.' })
@@ -102,7 +107,7 @@ const newClientFormSchema = z.object({
 
 type NewClientFormSchema = z.infer<typeof newClientFormSchema>
 
-type NewClientFormSchemaToSendToAPI = Omit<NewClientFormSchema, 'unitValue' | 'lumpSum'> & { unitValue: number, lumpSum: number }
+type NewClientFormSchemaToSendToAPI = Omit<NewClientFormSchema, 'unitValue' | 'lumpSum' | 'isHinova'> & { unitValue: number, lumpSum: number, isHinova: boolean }
 
 
 const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
@@ -122,6 +127,8 @@ const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   contractUrl: '',
   statusId: STATUS.Ativo,
   urlSite: '',
+  isHinova: 'false',
+  hinovaToken: '',
   primaryColor: '',
   secondColor: '',
 
@@ -151,6 +158,9 @@ export default function RegisterClient() {
       .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
     unitValue: transformCurrencyStringToNumber(unitValue),
     lumpSum: transformCurrencyStringToNumber(lumpSum),
+    isHinova: newClientData.isHinova === 'true',
+    hinovaToken: newClientData.hinovaToken ?? ''
+
   })
 
   const postClient = async (newClientData: NewClientFormSchema) => {
@@ -352,6 +362,43 @@ export default function RegisterClient() {
               {
                 form.formState.errors.contractUrl
                   && <span className="text-red-500 text-xs">{form.formState.errors.contractUrl.message}</span>
+              }
+            </InputContainer>
+          </DetailsRow>
+
+          <DetailsRow>
+            <InputContainer size="w-1/3">
+              <Label htmlFor="isHinova">Tem SGA</Label>
+              <FormField
+                control={form.control}
+                name="isHinova"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
+                      <FormControl>
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="false">Não</SelectItem>
+                        <SelectItem value="true">Sim</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              {
+                form.formState.errors.isHinova
+                  && <span className="text-red-500 text-xs">{form.formState.errors.isHinova.message}</span>
+              }
+            </InputContainer>
+            <InputContainer size="w-2/3">
+              <Label htmlFor="hinovaToken">Token do SGA</Label>
+              <Input className="bg-white" { ...form.register("hinovaToken") } />
+              {
+                form.formState.errors.hinovaToken
+                  && <span className="text-red-500 text-xs">{form.formState.errors.hinovaToken.message}</span>
               }
             </InputContainer>
           </DetailsRow>

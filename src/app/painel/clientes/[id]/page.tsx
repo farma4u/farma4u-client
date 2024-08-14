@@ -57,6 +57,8 @@ interface IClientDetailed {
   status: string
   createdAt: string
   urlSite: string
+  isHinova: boolean
+  hinovaToken: string
   primaryColor: string
   secondColor: string
   image: string
@@ -131,6 +133,11 @@ const updateClientFormSchema = z.object({
   urlSite: z
     .string({ required_error: 'O campo URL Site é obrigatório.' })
     .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
+  isHinova: z
+    .string({ required_error: 'O campo Tem SGA é obrigatório.' }),
+  hinovaToken: z
+    .string({ required_error: 'O campo TOKEN SGA é obrigatório.' })
+    .optional(),
   primaryColor: z
     .string({ required_error: 'O campo Cor Primária é obrigatório.' })
     .min(3, { message: 'O campo Cor Primária deve ter pelo menos 3 caracteres.' })
@@ -144,6 +151,8 @@ const updateClientFormSchema = z.object({
 })
 
 type UpdateClientFormSchema = z.infer<typeof updateClientFormSchema>
+
+type UpdateClientDataToAPI = Omit<UpdateClientFormSchema, 'isHinova'> & { isHinova: boolean }
 
 const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   corporateName: '',
@@ -160,6 +169,8 @@ const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   unitValue: 0,
   contractUrl: '',
   urlSite: '',
+  isHinova: 'false',
+  hinovaToken: '',
   primaryColor: '',
   secondColor: '',
   image: ''
@@ -217,6 +228,8 @@ export default function ClientDetailsPage() {
     form.setValue('address', client.address)
     form.setValue('state', client.state)
     form.setValue('city', client.city)
+    form.setValue('isHinova', client.isHinova ? 'true' : 'false')
+    form.setValue('hinovaToken', client.hinovaToken)
   }
 
   const fillUpdateHotsiteForm = (client: IHotsiteDetailed) => {
@@ -260,12 +273,14 @@ export default function ClientDetailsPage() {
     setHotsiteDetailed(hotsiteResponse.data);
   }
 
-  const formatUpdatedClientData = (clientData: UpdateClientFormSchema): UpdateClientFormSchema => ({
+  const formatUpdatedClientData = (clientData: UpdateClientFormSchema): UpdateClientDataToAPI  => ({
     ...clientData,
     managerPhoneNumber: clientData.managerPhoneNumber && clientData.managerPhoneNumber
       .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
     financePhoneNumber: clientData.financePhoneNumber && clientData.financePhoneNumber
       .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
+    hinovaToken: clientData.hinovaToken ?? '',
+    isHinova: clientData.isHinova === 'true'
   })
 
   const updateClient = async (client: UpdateClientFormSchema) => {
@@ -534,7 +549,7 @@ export default function ClientDetailsPage() {
                 <AlertDialogTrigger title='Editar' className='rounded-md w-9 h-9 bg-primary text-white flex flex-col justify-center'>
                   <Pencil  className='mx-auto'/>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className='max-h-full overflow-scroll'>
                   <AlertDialogTitle>Editar Cliente</AlertDialogTitle>
                   <Form { ...form}>
                     <form
@@ -608,6 +623,24 @@ export default function ClientDetailsPage() {
                           {
                             form.formState.errors.unitValue
                               && <span className="text-red-500 text-xs">{form.formState.errors.unitValue.message}</span>
+                          }
+                        </InputContainer>
+                      </DetailsRow>
+
+                      <DetailsRow>
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="isHinova">Tem SGA</Label>
+                          <select className='h-8 px-4 border rounded-md bg-white' { ...form.register("isHinova") }>
+                            <option value="false">Não</option>
+                            <option value="true">Sim</option>
+                          </select>
+                        </InputContainer>
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="hinovaToken">Token do SGA</Label>
+                          <Input className="bg-white" { ...form.register("hinovaToken") } />
+                          {
+                            form.formState.errors.hinovaToken
+                              && <span className="text-red-500 text-xs">{form.formState.errors.hinovaToken.message}</span>
                           }
                         </InputContainer>
                       </DetailsRow>
