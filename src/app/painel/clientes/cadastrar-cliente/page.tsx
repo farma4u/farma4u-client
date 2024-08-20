@@ -26,7 +26,7 @@ import { sendHotsiteRequest } from '@/lib/sendHotsiteRequest'
 import { STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
 import { transformCurrencyStringToNumber, formatCurrency, applyCurrencyMaskReturningString } from '@/lib/utils'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const newClientFormSchema = z.object({
   cnpj: z
@@ -40,8 +40,7 @@ const newClientFormSchema = z.object({
     .string({ required_error: 'O campo Nome Fantasia é obrigatório.' })
     .min(3, { message: 'O campo Nome Fantasia deve ter pelo menos 3 caracteres.' }),
   segment: z
-    .string({ required_error: 'O campo Segmento é obrigatório.' })
-    .min(3, { message: 'O campo Segmento deve ter pelo menos 3 caracteres.' }),
+    .string({ required_error: 'O campo Segmento é obrigatório.' }),
   address: z
     .string({ required_error: 'O campo Endereço é obrigatório.' })
     .min(3, { message: 'O campo Endereço deve ter pelo menos 3 caracteres.' }),
@@ -510,6 +509,12 @@ export default function RegisterClient() {
 
           <Button className="my-4" disabled={!form.formState.isValid} type='submit'>
             Cadastrar cliente
+          </Button>
+          <Button className="my-4" type='button' onClick={() => {
+            const values = form.getValues()
+            console.log(form.formState.isValid)
+            }}>
+            Teste
           </Button>
         </form>
       </Form>

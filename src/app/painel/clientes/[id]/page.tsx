@@ -88,7 +88,6 @@ const updateClientFormSchema = z.object({
     .optional(),
   segment: z
     .string({ required_error: 'O campo Segmento é obrigatório.' })
-    .min(3, { message: 'O campo Segmento deve ter pelo menos 3 caracteres.' })
     .optional(),
   address: z
     .string({ required_error: 'O campo Endereço é obrigatório.' })
