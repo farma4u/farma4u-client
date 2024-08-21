@@ -57,8 +57,8 @@ const newClientFormSchema = z.object({
     .string({ required_error: 'O campo Telefone do Responsável é obrigatório.' })
     .min(10, { message: 'O campo Telefone do Responsável deve ter pelo menos 10 caracteres.' }),
   managerEmail: z
-    .string({ required_error: 'O campo E-mail do Responsável é obrigatório.' })
-    .email({ message: 'O campo E-mail do Responsável deve ser um e-mail válido.' }),
+    .string({ required_error: 'O campo E-mail do Responsável é obrigatório.' }),
+    // .email({ message: 'O campo E-mail do Responsável deve ser um e-mail válido.' }),
   financePhoneNumber: z
     .string({ required_error: 'O campo Telefone do Financeiro é obrigatório.' })
     .min(10, { message: 'O campo Telefone do Financeiro deve ter pelo menos 10 caracteres.' }),

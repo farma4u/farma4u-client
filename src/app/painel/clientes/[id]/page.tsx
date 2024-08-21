@@ -111,7 +111,7 @@ const updateClientFormSchema = z.object({
     .optional(),
   managerEmail: z
     .string({ required_error: 'O campo E-mail do Responsável é obrigatório.' })
-    .email({ message: 'O campo E-mail do Responsável deve ser um e-mail válido.' })
+    // .email({ message: 'O campo E-mail do Responsável deve ser um e-mail válido.' })
     .optional(),
   financePhoneNumber: z
     .string({ required_error: 'O campo Telefone do Financeiro é obrigatório.' })
