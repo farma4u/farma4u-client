@@ -155,42 +155,42 @@ export default function MemberDetailsPage() {
   const formatMemberDetailed = (member: MemberDetailedFromAPI) => ({
     ...member,
     client: {
-      cnpj: applyCnpjMask(member.client.cnpj),
-      fantasyName: captalize(member.client.fantasyName),
+      cnpj: applyCnpjMask(member.client.cnpj ?? ''),
+      fantasyName: captalize(member.client.fantasyName ?? ''),
     },
-    cpf: applyCpfMask(member.cpf),
-    name: captalize(member.name),
-    phoneNumber: formatPhoneNumber(member.phoneNumber),
-    birthDate: formatBirthdate(member.birthDate),
-    cep: applyCepMask(member.cep),
-    totalSavings: formatCurrency(member.totalSavings),
+    cpf: applyCpfMask(member.cpf ?? ''),
+    name: captalize(member.name ?? ''),
+    phoneNumber: formatPhoneNumber(member.phoneNumber ?? ''),
+    birthDate: formatBirthdate(member.birthDate ?? ''),
+    cep: applyCepMask(member.cep ?? ''),
+    totalSavings: formatCurrency(member.totalSavings ?? 0),
     status: STATUS[member.statusId],
-    createdAt: formatDateTime(member.createdAt),
+    createdAt: formatDateTime(member.createdAt ?? ''),
     orders: member.orders.map((order) => ({
       ...order,
-      totalValue: formatCurrency(order.totalValue),
-      totalSavings: formatCurrency(order.totalSavings),
+      totalValue: formatCurrency(order.totalValue ?? 0),
+      totalSavings: formatCurrency(order.totalSavings ?? 0),
       status: STATUS[order.statusId],
-      createdAt: formatDateTime(order.createdAt),
-      updatedAt: formatDateTime(order.updatedAt),
+      createdAt: formatDateTime(order.createdAt ?? ''),
+      updatedAt: formatDateTime(order.updatedAt ?? ''),
       items: order.items.map((item) => ({
         ...item,
-        listPrice: formatCurrency(item.listPrice),
-        discountPrice: formatCurrency(item.discountPrice),
-        createdAt: formatDateTime(item.createdAt),
-        updatedAt: formatDateTime(item.updatedAt),
-        medicineName: captalize(item.medicineName),
-        medicineType: captalize(item.medicineType)
+        listPrice: formatCurrency(item.listPrice ?? 0),
+        discountPrice: formatCurrency(item.discountPrice ?? 0),
+        createdAt: formatDateTime(item.createdAt ?? ''),
+        updatedAt: formatDateTime(item.updatedAt ?? ''),
+        medicineName: captalize(item.medicineName ?? ''),
+        medicineType: captalize(item.medicineType ?? '')
       }))
     }))
   })
 
   const fillUpdateForm = (member: MemberDetailedFromAPI) => {
-    form.setValue('name', member.name)
-    form.setValue('email', member.email)
-    form.setValue('phoneNumber', formatPhoneNumber(member.phoneNumber))
-    form.setValue('birthDate', formatBirthdate(member.birthDate))
-    form.setValue('cep', applyCepMask(member.cep))
+    form.setValue('name', member.name ?? '')
+    form.setValue('email', member.email ?? '')
+    form.setValue('phoneNumber', formatPhoneNumber(member.phoneNumber ?? ''))
+    form.setValue('birthDate', formatBirthdate(member.birthDate ?? ''))
+    form.setValue('cep', applyCepMask(member.cep ?? ''))
   }
 
   const fetchMember = async (id: string) => {
@@ -536,28 +536,28 @@ export default function MemberDetailsPage() {
 
       <div className='bg-white border rounded-md p-4 flex flex-col gap-4'>
         <DetailsRow>
-          <DetailsField label="Nome" value={memberDetailed?.name} />
-          <DetailsField label="CPF" value={memberDetailed?.cpf} width="min-w-60" />
+          <DetailsField label="Nome" value={memberDetailed?.name ?? ''} />
+          <DetailsField label="CPF" value={memberDetailed?.cpf ?? ''} width="min-w-60" />
         </DetailsRow>
 
         <DetailsRow>
-          <DetailsField label="Data de Nascimento" value={memberDetailed?.birthDate} />
-          <DetailsField label="Nome do Cliente" value={memberDetailed?.client.fantasyName} />
-          <DetailsField label="CNPJ do Cliente" value={memberDetailed?.client.cnpj} />
+          <DetailsField label="Data de Nascimento" value={memberDetailed?.birthDate ?? ''} />
+          <DetailsField label="Nome do Cliente" value={memberDetailed?.client.fantasyName ?? ''} />
+          <DetailsField label="CNPJ do Cliente" value={memberDetailed?.client.cnpj ?? ''} />
         </DetailsRow>
 
         <DetailsRow>
-          <DetailsField label="Economia Total" value={memberDetailed?.totalSavings} />
-          <DetailsField label="Status" value={memberDetailed?.status} />
-          <DetailsField label="Data do Cadastro" value={memberDetailed?.createdAt} />
+          <DetailsField label="Economia Total" value={memberDetailed?.totalSavings ?? ''} />
+          <DetailsField label="Status" value={memberDetailed?.status ?? ''} />
+          <DetailsField label="Data do Cadastro" value={memberDetailed?.createdAt ?? ''} />
         </DetailsRow>
 
         <Separator />
 
         <DetailsRow>
-          <DetailsField label="E-mail" value={memberDetailed?.email} />
-          <DetailsField label="Telefone" value={memberDetailed?.phoneNumber} />
-          <DetailsField label="CEP" value={memberDetailed?.cep} />
+          <DetailsField label="E-mail" value={memberDetailed?.email ?? ''} />
+          <DetailsField label="Telefone" value={memberDetailed?.phoneNumber ?? ''} />
+          <DetailsField label="CEP" value={memberDetailed?.cep ?? ''} />
         </DetailsRow>
 
         <Separator />
@@ -621,10 +621,10 @@ export default function MemberDetailsPage() {
                     </div>
 
                     <DetailsRow>
-                      <DetailsField label="Valor Total" value={order.totalValue} />
-                      <DetailsField label="Economia Total" value={order?.totalSavings} />
+                      <DetailsField label="Valor Total" value={order.totalValue ?? ''} />
+                      <DetailsField label="Economia Total" value={order?.totalSavings ?? ''} />
                       <DetailsField label="Recorrente" value={order.isRecurring ? 'Sim' : 'Não'} />
-                      <DetailsField label="Status" value={order.status} />
+                      <DetailsField label="Status" value={order.status ?? ''} />
                     </DetailsRow>
                     <Accordion className="rounded-md border bg-background" type="single" collapsible>
                       <AccordionItem value="item-1">
@@ -635,14 +635,14 @@ export default function MemberDetailsPage() {
                               <div className='bg-white border rounded-md flex p-4 flex-col gap-4'>
 
                                 <DetailsRow>
-                                  <DetailsField label="Nome do Medicamento" value={item.medicineName} />
-                                  <DetailsField label="Tipo de Medicamento" value={item.medicineType} />
+                                  <DetailsField label="Nome do Medicamento" value={item.medicineName ?? ''} />
+                                  <DetailsField label="Tipo de Medicamento" value={item.medicineType ?? ''} />
                                 </DetailsRow>
 
                                 <DetailsRow>
-                                  <DetailsField label="Valor Unitário de Tabela" value={item.listPrice} />
-                                  <DetailsField label="Valor com Desconto" value={item?.discountPrice} />
-                                  <DetailsField label="Quantidade" value={item.quantity} />
+                                  <DetailsField label="Valor Unitário de Tabela" value={item.listPrice ?? ''} />
+                                  <DetailsField label="Valor com Desconto" value={item?.discountPrice ?? ''} />
+                                  <DetailsField label="Quantidade" value={item.quantity ?? ''} />
                                 </DetailsRow>
                               </div>
                             </AccordionContent>
