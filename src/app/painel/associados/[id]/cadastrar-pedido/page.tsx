@@ -37,6 +37,7 @@ import {
 import { sendRequest } from '@/lib/sendRequest'
 import { STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
+import { Textarea } from '@/components/ui/textarea'
 
 interface INewOrderForm {
   memberId: string
@@ -44,6 +45,7 @@ interface INewOrderForm {
   totalValue: number
   totalSavings: number
   isRecurring: boolean
+  notes: string
   items: INewOrderItem[]
 }
 
@@ -59,6 +61,7 @@ interface INewOrder {
   statusId: number
   totalValue: number
   totalSavings: number
+  notes: string
   isRecurring: boolean
   items: INewOrderItem[]
 }
@@ -68,6 +71,7 @@ export default function RegisterOrder() {
   const [isRecurring, setIsRecurring] = useState<boolean>(false)
   const [totalValue, setTotalValue] = useState<string>('')
   const [totalSavings, setTotalSavings] = useState<string>('')
+  const [notes, setNotes] = useState<string>('')
   const [items, setItems] = useState<Array<INewOrderItem & { id: string }>>([])
   const [isAddItemButtonDisabled, setIsAddItemButtonDisabled] = useState<boolean>(true)
 
@@ -89,6 +93,7 @@ export default function RegisterOrder() {
       memberId: params.id as string,
       statusId,
       isRecurring,
+      notes,
       items,
       totalSavings: transformCurrencyStringToNumber(totalSavings),
       totalValue: transformCurrencyStringToNumber(totalValue)
@@ -206,6 +211,7 @@ export default function RegisterOrder() {
       memberId: params.id as string,
       totalValue: transformCurrencyStringToNumber(totalValue),
       totalSavings: transformCurrencyStringToNumber(totalSavings),
+      notes,
       items
     })
     setIsPostOrderButtonDisabled(!isOrderValid)
@@ -291,6 +297,19 @@ export default function RegisterOrder() {
                   Campo brigatório.
                 </span>
               }
+            </InputContainer>
+          </DetailsRow>
+
+          <DetailsRow>
+            <InputContainer size="w-full">
+              <Label htmlFor="notes">Observações</Label>
+              <Textarea
+                className="bg-white"
+                id="notes"
+                name="notes"
+                onChange={(e) => setNotes(e.target.value)}
+                value={notes}
+              />
             </InputContainer>
           </DetailsRow>
 

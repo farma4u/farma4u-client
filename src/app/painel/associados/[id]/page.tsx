@@ -57,7 +57,8 @@ interface IOrder {
   clientId: string
   totalValue: string
   totalSavings: string
-  isRecurring: false,
+  isRecurring: false
+  notes: string
   status: string
   createdAt: string
   updatedAt: string
@@ -625,6 +626,9 @@ export default function MemberDetailsPage() {
                       <DetailsField label="Economia Total" value={order?.totalSavings ?? ''} />
                       <DetailsField label="Recorrente" value={order.isRecurring ? 'Sim' : 'Não'} />
                       <DetailsField label="Status" value={order.status ?? ''} />
+                    </DetailsRow>
+                    <DetailsRow>
+                      <DetailsField label="Observações" value={order.notes ?? ''} />
                     </DetailsRow>
                     <Accordion className="rounded-md border bg-background" type="single" collapsible>
                       <AccordionItem value="item-1">
