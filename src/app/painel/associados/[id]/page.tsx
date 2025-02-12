@@ -402,7 +402,8 @@ export default function MemberDetailsPage() {
             )
           }
           {
-            memberDetailed?.status === STATUS[2] && (
+            memberDetailed &&
+            [STATUS[2], STATUS[4]].includes(memberDetailed?.status) && (
               <AlertDialog>
                 <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Ativar</AlertDialogTrigger>
                 <AlertDialogContent>
