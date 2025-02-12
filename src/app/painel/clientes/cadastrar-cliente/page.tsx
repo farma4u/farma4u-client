@@ -84,8 +84,8 @@ const newClientFormSchema = z.object({
     .optional(),
   statusId: z.coerce
     .number({ required_error: 'O campo Status é obrigatório.' })
-    .gte(1, { message: 'O campo Status deve 1 (ativo), 2 (inativo) ou 3 (excluído).' })
-    .lte(3, { message: 'O campo Status deve 1 (ativo), 2 (inativo) ou 3 (excluído).' }),
+    .gte(1, { message: 'O campo Status deve 1 (ativo), 2 (inativo), 3 (excluído) ou 4 (inadimplente).' })
+    .lte(4, { message: 'O campo Status deve 1 (ativo), 2 (inativo), 3 (excluído) ou 4 (inadimplente).' }),
   urlSite: z
     .string({ required_error: 'O campo URL Site é obrigatório.' })
     .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
@@ -286,6 +286,7 @@ export default function RegisterClient() {
                         <SelectItem value="1">{STATUS[1]}</SelectItem>
                         <SelectItem value="2">{STATUS[2]}</SelectItem>
                         <SelectItem value="3">{STATUS[3]}</SelectItem>
+                        <SelectItem value="4">{STATUS[4]}</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>

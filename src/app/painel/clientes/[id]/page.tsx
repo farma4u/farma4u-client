@@ -377,6 +377,29 @@ export default function ClientDetailsPage() {
     fetchClient(id)
   }
 
+  const setClientAsDefaulting = async (id: string) => {
+    const response = await sendRequest({
+      endpoint: `/client/${id}/set-as-defaulting`,
+      method: 'PATCH',
+    })
+
+    if (response.error) {
+      toast({
+        description: response.message,
+        variant: 'destructive'
+      })
+
+      return
+    }
+
+    toast({
+      description: response.message,
+      variant: "success"
+    })
+
+    fetchClient(id)
+  }
+
   const deleteClient = async (id: string) => {
 
     const response = await sendRequest({
@@ -495,30 +518,53 @@ export default function ClientDetailsPage() {
         <div className="flex gap-4">
           {
             clientDetailed?.status === STATUS[1] && (
-              <AlertDialog>
-                <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Inativar</AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar inativação?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Todos os associados do cliente também serão inativados!
-                    </AlertDialogDescription>
-                    <AlertDialogDescription>
-                      Essa ação poderá ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <Button onClick={() => inactivateClient(clientDetailed.id)}>
-                      Inativar
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <>
+                <AlertDialog>
+                  <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Inadimplente</AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar marcação do cliente como inadimplente?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Todos os associados do cliente também serão marcados como inadimplentes!
+                      </AlertDialogDescription>
+                      <AlertDialogDescription>
+                        Essa ação poderá ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <Button onClick={() => setClientAsDefaulting(clientDetailed.id)}>
+                        Confirmar
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Inativar</AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar inativação?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Todos os associados do cliente também serão inativados!
+                      </AlertDialogDescription>
+                      <AlertDialogDescription>
+                        Essa ação poderá ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <Button onClick={() => inactivateClient(clientDetailed.id)}>
+                        Inativar
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )
           }
           {
-            clientDetailed?.status === STATUS[2] && (
+            clientDetailed &&
+            [STATUS[2], STATUS[4]].includes(clientDetailed?.status as string) && (
               <AlertDialog>
                 <AlertDialogTrigger className='uppercase px-8 h-9 rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Ativar</AlertDialogTrigger>
                 <AlertDialogContent>
@@ -767,7 +813,7 @@ export default function ClientDetailsPage() {
           }
           {
             clientDetailed
-            && [STATUS[1], STATUS[2]].includes(clientDetailed.status as string)
+            && [STATUS[1], STATUS[2], STATUS[4]].includes(clientDetailed.status as string)
             && (
               <AlertDialog>
                 <AlertDialogTrigger title='Excluir' className='rounded-md w-9 h-9 bg-destructive text-white flex flex-col justify-center'>
