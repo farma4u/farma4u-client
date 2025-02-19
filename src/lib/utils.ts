@@ -43,3 +43,7 @@ export const validateCurrencyInput = (value: string): boolean => {
   if (splitted.length === 2 && ![1, 2].includes(splitted[1].length)) return false
   return true
 }
+
+export const removeSpecialCharacters = (value: string): string => {
+  return value.replace(/[^a-zA-Z0-9]/g, '');
+};

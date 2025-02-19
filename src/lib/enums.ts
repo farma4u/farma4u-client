@@ -4,3 +4,9 @@ export enum STATUS {
   Excluído = 3,
   Inadimplente = 4
 }
+
+export enum ROLE {
+  MEMBER = 1,
+  MASTER = 2,
+  CLIENT_ADMIN = 3
+}

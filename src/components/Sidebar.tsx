@@ -12,7 +12,7 @@ import {
   CommandList
 } from "@/components/ui/command"
 import logo from '../../public/logo-f4u-png.png'
-import { Store, Users } from 'lucide-react'
+import { CircleUserRound, Store, Users } from 'lucide-react'
 import UserCard from './UserCard'
 
 export default function Sidebar() {
@@ -24,6 +24,8 @@ export default function Sidebar() {
       items: [
         { name: 'Associados', link: '/painel/associados', icon: <Users /> },
         { name: 'Clientes', link: '/painel/clientes', icon: <Store /> },
+        { name: 'Usuários', link: '/painel/usuarios', icon: <CircleUserRound />, onlyMaster: false }
+
       ]
     }
   ]
