@@ -7,27 +7,23 @@ import { v4 as uuid } from 'uuid'
 
 import {
   Command,
-  CommandGroup,
   CommandItem,
   CommandList
 } from "@/components/ui/command"
 import logo from '../../public/logo-f4u-png.png'
 import { CircleUserRound, Store, Users } from 'lucide-react'
 import UserCard from './UserCard'
+import { ROLE } from '@/lib/enums'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
 
   const commandListItems = [
-    {
-      group: 'Sessões',
-      items: [
-        { name: 'Associados', link: '/painel/associados', icon: <Users /> },
-        { name: 'Clientes', link: '/painel/clientes', icon: <Store /> },
-        { name: 'Usuários', link: '/painel/usuarios', icon: <CircleUserRound />, onlyMaster: false }
-
-      ]
-    }
+    { name: 'Associados', link: '/painel/associados', icon: <Users />, onlyMaster: false },
+    { name: 'Clientes', link: '/painel/clientes', icon: <Store />, onlyMaster: true },
+    { name: 'Usuários', link: '/painel/usuarios', icon: <CircleUserRound />, onlyMaster: false }
   ]
 
   return (
@@ -35,21 +31,15 @@ export default function Sidebar() {
       <nav className="flex flex-grow gap-8 flex-col">
         <UserCard />
         <Command>
-          <CommandList>
+        <CommandList>
             {
-              commandListItems.map((commandListItem) => (
-                <CommandGroup className="flex flex-col gap-4" heading={commandListItem.group} key={uuid()}>
-                  {
-                    commandListItem.items.map((commandItem) => (
-                      <Link href={commandItem.link} key={uuid()} passHref={true}>
-                        <CommandItem className={`mb-4 pl-4 gap-4 ${pathname.includes(commandItem.link) && 'bg-accent'}`}>
-                          {commandItem.icon}
-                          {commandItem.name}
-                        </CommandItem>
-                      </Link>
-                    ))
-                  }
-                </CommandGroup>
+              commandListItems.map((commandItem) => !(user?.roleId === ROLE.CLIENT_ADMIN && commandItem.onlyMaster) && (
+                <Link href={commandItem.link} key={uuid()} passHref={true}>
+                  <CommandItem className={`mb-4 pl-4 gap-4 ${pathname.includes(commandItem.link) && 'bg-accent'}`}>
+                    {commandItem.icon}
+                    {commandItem.name}
+                  </CommandItem>
+                </Link>
               ))
             }
           </CommandList>

@@ -142,17 +142,17 @@ export default function RegisterUser() {
 
   const formatClient = (client: IClient): IClient => ({
     ...client,
-    cnpj: applyCnpjMask(client.cnpj),
-    fantasyName: captalize(client.fantasyName),
-    segment: captalize(client.segment),
-    createdAt: formatDateTime(client.createdAt),
+    cnpj: applyCnpjMask(client.cnpj ?? ''),
+    fantasyName: captalize(client.fantasyName ?? ''),
+    segment: captalize(client.segment ?? ''),
+    createdAt: formatDateTime(client.createdAt ?? ''),
     city: client.city ? {
       id: client.city.id,
-      name: captalize(client.city.name)
+      name: captalize(client.city.name ?? '')
     } : null,
     state: client.state ? {
       id: client.state.id,
-      name: captalize(client.state.name)
+      name: captalize(client.state.name ?? '')
     } : null
   })
 

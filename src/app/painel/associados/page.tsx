@@ -38,9 +38,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { sendRequest } from '@/lib/sendRequest'
-import { STATUS } from '@/lib/enums'
+import { ROLE, STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
 import { Label } from '@/components/ui/label'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface IClient {
   id: string
@@ -79,6 +80,18 @@ const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
 }
 
 export default function MembersPage() {
+  // --------------------------- WORKAROUND - DO NOT REMOVE ---------------------------
+  // this guarantees that the last user token will never be used in request from new user login
+  // when page reloads, the httpClient instance updates it's headers with the new user token
+  useEffect(() => {
+    const notFirstRender = localStorage.getItem('notFirstRender')
+
+    if (notFirstRender !== 'true') {
+      localStorage.setItem('notFirstRender', 'true')
+      window.location.reload()
+    }
+  }, [])
+
   const [clientIdSelected, setClientIdSelected] = useState<string>('')
   const [clients, setClients] = useState<IClient[]>([])
   const [fileSelected, setFileSelected] = useState<File | null>(null)
@@ -94,6 +107,7 @@ export default function MembersPage() {
   })
   const { push } = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const columns: ColumnDef<IMember>[] = [
     {
@@ -300,9 +314,17 @@ export default function MembersPage() {
     if (query) {
       fetchMembers(query)
     } else fetchMembers()
-
-    fetchClients()
   }, [skip])
+
+  // Se for ususário MASTER, carrega lista de clientes quando a página carrega
+  useEffect(() => {
+    if (user?.roleId === ROLE.MASTER) {
+      fetchClients()
+    } else if (user?.roleId === ROLE.CLIENT_ADMIN) { // Se não, pré-seleciona cliente do usuário para criação de novos associados
+      console.log(user?.client?.id)
+      setClientIdSelected(user.client?.id ?? '')
+    }
+  }, [user])
 
   return (
     <DashboardLayout title="Associados" secondaryText={`Total: ${membersCount} associados`}>
@@ -378,7 +400,7 @@ export default function MembersPage() {
             <Input { ...form.register("cpf") } placeholder="CPF" type="text" />
           </div>
           <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("clientCnpj") } placeholder="CNPJ do cliente" type="text" />
+            <Input { ...form.register("clientCnpj") } placeholder="CNPJ do cliente" type="text" disabled={user?.roleId === ROLE.CLIENT_ADMIN} />
           </div>
           <div className="flex flex-col grow space-y-1.5 bg-white">
             <Input { ...form.register("name") } placeholder="Nome" type="text" />

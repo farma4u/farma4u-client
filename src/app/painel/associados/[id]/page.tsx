@@ -36,8 +36,9 @@ import { Label } from '@/components/ui/label'
 import { Pencil, Trash2 } from 'lucide-react'
 import { sendRequest } from '@/lib/sendRequest'
 import { Separator } from '@/components/ui/separator'
-import { STATUS } from '@/lib/enums'
+import { ROLE, STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface IItem {
   id: string
@@ -146,6 +147,7 @@ export default function MemberDetailsPage() {
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const form = useForm<UpdateMemberFormSchema>({
     mode: 'onBlur',
@@ -372,12 +374,16 @@ export default function MemberDetailsPage() {
       title={`${memberDetailed?.name || ''}`}
     >
       <div className="flex justify-between w-full">
-        <Button
-          disabled={memberDetailed?.status !== STATUS[1]}
-          onClick={() => {push(`/painel/associados/${params.id as string}/cadastrar-pedido`)}}
-        >
-          Cadastrar Pedido
-        </Button>
+        {
+          user?.roleId !== ROLE.CLIENT_ADMIN ? (
+            <Button
+              disabled={memberDetailed?.status !== STATUS[1]}
+              onClick={() => {push(`/painel/associados/${params.id as string}/cadastrar-pedido`)}}
+            >
+              Cadastrar Pedido
+            </Button>
+          ) : <div></div>
+        }
 
         <div className="flex gap-4">
           {

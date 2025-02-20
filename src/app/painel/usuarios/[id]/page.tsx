@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function UserDetailsPage() {
   // --------------------------- PAGE SETUP ---------------------------
@@ -78,6 +79,7 @@ export default function UserDetailsPage() {
 
   const params = useParams()
   const { toast } = useToast()
+  const { user: userLogged } = useAuth()
 
   const SELECT_DEFAULT_VALUE = '-1'
 
@@ -327,10 +329,15 @@ export default function UserDetailsPage() {
     }
   }, [selectedClientId])
 
-  // Carrega lista de clientes quando a página carrega
+  // Se for ususário MASTER, carrega lista de clientes quando a página carrega
   useEffect(() => {
-    fetchClients()
-  }, [])
+    if (userLogged?.roleId === ROLE.MASTER) {
+      fetchClients()
+    } else if (userLogged?.roleId === ROLE.CLIENT_ADMIN) { // Se não, pré-seleciona cliente do usuário para criação de novos associados
+      console.log(userLogged?.client?.id)
+      updateUserForm.setValue('clientId', userLogged.client?.id ?? '')
+    }
+  }, [userLogged])
 
   // --------------------------- RETURN ---------------------------
   return (
