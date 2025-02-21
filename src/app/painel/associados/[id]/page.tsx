@@ -637,29 +637,33 @@ export default function MemberDetailsPage() {
                     <DetailsRow>
                       <DetailsField label="Observações" value={order.notes ?? ''} />
                     </DetailsRow>
-                    <Accordion className="rounded-md border bg-background" type="single" collapsible>
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger className="font-semibold">Lista de Medicamentos</AccordionTrigger>
-                        {
-                          order.items.map((item) => (
-                            <AccordionContent key={uuid()}>
-                              <div className='bg-white border rounded-md flex p-4 flex-col gap-4'>
+                    {
+                      user?.roleId !== ROLE.CLIENT_ADMIN && (
+                        <Accordion className="rounded-md border bg-background" type="single" collapsible>
+                          <AccordionItem value="item-1">
+                            <AccordionTrigger className="font-semibold">Lista de Medicamentos</AccordionTrigger>
+                            {
+                              order.items.map((item) => (
+                                <AccordionContent key={uuid()}>
+                                  <div className='bg-white border rounded-md flex p-4 flex-col gap-4'>
 
-                                <DetailsRow>
-                                  <DetailsField label="Nome do Medicamento" value={item.medicineName ?? ''} />
-                                  <DetailsField label="Tipo de Medicamento" value={item.medicineType ?? ''} />
-                                </DetailsRow>
+                                    <DetailsRow>
+                                      <DetailsField label="Nome do Medicamento" value={item.medicineName ?? ''} />
+                                      <DetailsField label="Tipo de Medicamento" value={item.medicineType ?? ''} />
+                                    </DetailsRow>
 
-                                <DetailsRow>
-                                  <DetailsField label="Valor Unitário de Tabela" value={item.listPrice ?? ''} />
-                                  <DetailsField label="Valor com Desconto" value={item?.discountPrice ?? ''} />
-                                  <DetailsField label="Quantidade" value={item.quantity ?? ''} />
-                                </DetailsRow>
-                              </div>
-                            </AccordionContent>
-                          ))}
-                      </AccordionItem>
-                    </Accordion>
+                                    <DetailsRow>
+                                      <DetailsField label="Valor Unitário de Tabela" value={item.listPrice ?? ''} />
+                                      <DetailsField label="Valor com Desconto" value={item?.discountPrice ?? ''} />
+                                      <DetailsField label="Quantidade" value={item.quantity ?? ''} />
+                                    </DetailsRow>
+                                  </div>
+                                </AccordionContent>
+                              ))}
+                          </AccordionItem>
+                        </Accordion>
+                      )
+                    }
                   </div>
                 </AccordionContent>
               ))}
