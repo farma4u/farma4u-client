@@ -586,7 +586,11 @@ export default function MemberDetailsPage() {
                         {
                           order?.status === STATUS[1] && (
                             <AlertDialog>
-                              <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Inativar</AlertDialogTrigger>
+                              {
+                                user?.roleId !== ROLE.CLIENT_ADMIN ? (
+                                  <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Inativar</AlertDialogTrigger>
+                                ) : <div></div>
+                              }
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Confirmar inativação?</AlertDialogTitle>
@@ -607,7 +611,11 @@ export default function MemberDetailsPage() {
                         {
                           order?.status === STATUS[2] && (
                             <AlertDialog>
-                              <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Ativar</AlertDialogTrigger>
+                              {
+                                user?.roleId !== ROLE.CLIENT_ADMIN ? (
+                                  <AlertDialogTrigger className='uppercase px-8 h-9 text-sm font-medium rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Ativar</AlertDialogTrigger>
+                                ) : <div></div>
+                              }
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Confirmar ativação?</AlertDialogTitle>

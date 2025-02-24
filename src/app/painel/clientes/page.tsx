@@ -56,7 +56,7 @@ const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
 export default function ClientsPage() {
   const [clients, setClients] = useState<IClient[]>([])
   const [clientsCount, setClientsCount] = useState<number>(0)
-  const [systemTotalSavings, setSystemTotalSavings] = useState<string>(formatCurrency(0))
+  // const [systemTotalSavings, setSystemTotalSavings] = useState<string>(formatCurrency(0))
   const [skip, setSkip] = useState<number>(0)
   const [page, setPage] = useState<number>(1)
   const [query, setQuery] = useState<URLSearchParams | null>(null)
@@ -169,7 +169,7 @@ export default function ClientsPage() {
 
       setClients([])
       setClientsCount(0)
-      setSystemTotalSavings(formatCurrency(0))
+      // setSystemTotalSavings(formatCurrency(0))
 
       return
     }
@@ -178,7 +178,7 @@ export default function ClientsPage() {
 
     setClients(formattedClients)
     setClientsCount(parseInt(response.headers[`x-total-count`]))
-    setSystemTotalSavings(formatCurrency(response.data.systemTotalSavings))
+    // setSystemTotalSavings(formatCurrency(response.data.systemTotalSavings))
   }
 
   // Carrega lista de clientes
@@ -191,7 +191,7 @@ export default function ClientsPage() {
   return (
     <DashboardLayout
       secondaryText={`Total: ${clientsCount} clientes`}
-      systemTotalSavingsText={`Economia total do sistema: ${systemTotalSavings}`}
+      // systemTotalSavingsText={`Economia total do sistema: ${systemTotalSavings}`}
       title="Clientes"
     >
       <Form { ...form }>

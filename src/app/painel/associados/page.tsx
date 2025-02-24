@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { applyCnpjMask, applyCpfMask, captalize, formatDateTime, removeCnpjMask, removeCpfMask } from '@/lib/utils'
+import { applyCnpjMask, applyCpfMask, captalize, formatCurrency, formatDateTime, removeCnpjMask, removeCpfMask } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DataTable } from '../../../components/DataTable'
@@ -71,6 +71,11 @@ interface IFormValues {
   statusId: string
 }
 
+interface SystemData {
+  totalSavings: number,
+  totalOrderCount: number
+}
+
 const PAGINATION_LIMIT = 10
 const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
   cpf: '',
@@ -100,6 +105,7 @@ export default function MembersPage() {
   const [skip, setSkip] = useState<number>(0)
   const [page, setPage] = useState<number>(1)
   const [query, setQuery] = useState<URLSearchParams | null>(null)
+  const [systemData, setSystemData] = useState<SystemData | null>(null)
 
   const form = useForm<IFormValues>({
     mode: 'onSubmit',
@@ -257,7 +263,7 @@ export default function MembersPage() {
 
     const formattedClients = response.data.clients.map((client) => formatClient(client))
 
-    setClients(formattedClients)    // setSystemTotalSavings(formatCurrency(response.data.systemTotalSavings))
+    setClients(formattedClients)
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -303,6 +309,24 @@ export default function MembersPage() {
     })
   }
 
+  async function fetchSystemData () {
+    const response = await sendRequest<{ systemData: SystemData }>({
+      endpoint: '/user/meta',
+      method: 'GET',
+    })
+
+    if (response.error) {
+      toast({
+        description: response.message,
+        variant: 'destructive'
+      })
+
+      return
+    }
+
+    setSystemData(response.data.systemData)
+  }
+
   useEffect(() => {
     if (fileSelected) {
       sendCSVToCreateMembers(fileSelected)
@@ -326,8 +350,16 @@ export default function MembersPage() {
     }
   }, [user])
 
+  useEffect(() => {
+    fetchSystemData()
+  }, [])
+
   return (
-    <DashboardLayout title="Associados" secondaryText={`Total: ${membersCount} associados`}>
+    <DashboardLayout
+      title="Associados"
+      secondaryText={`Total: ${membersCount} associados`}
+      systemTotalSavingsText={`Total de pedidos: ${systemData?.totalOrderCount} / Economia total: ${formatCurrency(systemData?.totalSavings ?? 0)}`}
+    >
       <div className="flex justify-between w-full">
         <div className="flex gap-4">
           <AlertDialog>

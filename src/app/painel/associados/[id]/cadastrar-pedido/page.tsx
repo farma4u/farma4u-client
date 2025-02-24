@@ -282,7 +282,7 @@ export default function RegisterOrder() {
               }
             </InputContainer>
             <InputContainer  size="w-1/4">
-              <Label htmlFor="totalSavings">Valor com Desconto</Label>
+              <Label htmlFor="totalSavings">Valor do Desconto</Label>
               <Input
                 disabled
                 prefix='R$'
