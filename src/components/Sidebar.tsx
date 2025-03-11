@@ -18,7 +18,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, clientImage } = useAuth()
 
   const commandListItems = [
     { name: 'Associados', link: '/painel/associados', icon: <Users />, onlyMaster: false },
@@ -46,7 +46,7 @@ export default function Sidebar() {
         </Command>
       </nav>
 
-      <Image className="rounded-md px-2" src={logo} alt="Farma4U" priority />
+      <Image className="rounded-md px-2" src={clientImage || logo} alt="Logotipo" priority />
     </aside>
   )
 }

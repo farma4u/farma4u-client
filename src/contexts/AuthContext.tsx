@@ -7,10 +7,13 @@ import { createSession } from '@/lib/auth'
 import { httpClient } from '@/lib/httpClient'
 import { sendRequest } from '@/lib/sendRequest'
 import { SessionData, UserLogged } from '@/lib/interfaces'
+import { get } from 'http'
+import { sendHotsiteRequest } from '@/lib/sendHotsiteRequest'
 
 interface AuthContextType {
   user: UserLogged | null,
   signIn: ({ cpf, password }: { cpf: string, password: string } ) => Promise<void>
+  clientImage: string | null
 }
 
 const SESSION_COOKIE_NAME = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME as string
@@ -19,6 +22,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserLogged | null>(null)
+  const [clientImage, setClientImage] = useState<string | null>(null)
 
   // Recupera dados da sessão dos cookies ao atualizar a página
   useEffect(() => {
@@ -60,8 +64,27 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
   }
 
+  useEffect(() => {
+    const NEXT_PUBLIC_API_HOTSITE_URL = process.env.NEXT_PUBLIC_API_HOTSITE_URL as string
+
+    const getClientImage = async (user: UserLogged) => {
+      const hotsiteResponse = await sendHotsiteRequest<{ image: string }>({
+        endpoint: `/find/${user.client?.id}`,
+        method: 'GET',
+      })
+
+      if (!hotsiteResponse.error) {
+        setClientImage(`${NEXT_PUBLIC_API_HOTSITE_URL}/images/${hotsiteResponse.data.image}`)
+      }
+    }
+
+    if (user && user.client !== null) {
+      getClientImage(user)
+    }
+  }, [user])
+
   return (
-    <AuthContext.Provider value={{ user, signIn }}>
+    <AuthContext.Provider value={{ user, signIn, clientImage }}>
       {children}
     </AuthContext.Provider>
   )
