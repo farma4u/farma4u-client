@@ -7,7 +7,6 @@ const nextConfig = {
         hostname: 'www.farma4u.com.br',
         port: '',
         pathname: '/api/images/**',
-        search: '',
       },
     ],
   },
