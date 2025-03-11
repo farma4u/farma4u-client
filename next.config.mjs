@@ -1,4 +1,16 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.farma4u.com.br',
+        port: '',
+        pathname: '/api/images/**',
+        search: '',
+      },
+    ],
+  },
+};
 
 export default nextConfig;
