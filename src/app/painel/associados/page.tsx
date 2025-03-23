@@ -66,16 +66,18 @@ interface IMember {
 
 interface IFormValues {
   searchInput: string
+  orderBy: string
   statusId: string
 }
 
 interface SystemData {
-  totalSavings: number,
+  totalSavings: number
   totalOrderCount: number
 }
 
 const PAGINATION_LIMIT = 10
 const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
+  orderBy: 'totalSavings',
   searchInput: '',
   statusId: '1'
 }
@@ -169,13 +171,14 @@ export default function MembersPage() {
   }
 
   const submitFilter = async (data: IFormValues) => {
-    const { searchInput, statusId } = data
+    const { searchInput, orderBy, statusId } = data
     const query = new URLSearchParams()
 
     const searchInputWithoutMask = removeSpecialCharacters(searchInput)
 
     if (searchInput) query.append('search-input', searchInputWithoutMask)
     if (statusId) query.append('status-id', statusId)
+    if (orderBy) query.append('order-by', orderBy)
 
     setQuery(query)
     await fetchMembers(query)
@@ -437,13 +440,38 @@ export default function MembersPage() {
             />
           </div>
 
+          {/* Order By */}
+          <div className="flex flex-col space-y-1.5">
+            <Label className='bg-transparent text-sm' htmlFor="orderBy">Ordenar por</Label>
+            <FormField
+              control={form.control}
+              name="orderBy"
+              render={({ field }) => (
+                <FormItem className='bg-white'>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-72">
+                        <SelectValue placeholder="Ordenar por" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="totalSavings">Maior economia</SelectItem>
+                      <SelectItem value="createdAt">Cadastrado mais recentemente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          </div>
+
           {/* Status */}
-          <div className="flex flex-col space-y-1.5 bg-white">
+          <div className="flex flex-col space-y-1.5">
+          <Label className='bg-transparent text-sm' htmlFor="statusId">Status</Label>
           <FormField
             control={form.control}
             name="statusId"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className='bg-white'>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-28">
