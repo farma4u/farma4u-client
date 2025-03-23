@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { applyCnpjMask, applyCpfMask, captalize, formatCurrency, formatDateTime, removeCnpjMask, removeCpfMask } from '@/lib/utils'
+import { applyCnpjMask, applyCpfMask, captalize, formatCurrency, formatDateTime, removeCnpjMask, removeCpfMask, removeSpecialCharacters } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DataTable } from '../../../components/DataTable'
@@ -65,9 +65,7 @@ interface IMember {
 }
 
 interface IFormValues {
-  cpf: string
-  name: string
-  clientCnpj: string
+  searchInput: string
   statusId: string
 }
 
@@ -78,9 +76,7 @@ interface SystemData {
 
 const PAGINATION_LIMIT = 10
 const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
-  cpf: '',
-  name: '',
-  clientCnpj: '',
+  searchInput: '',
   statusId: '1'
 }
 
@@ -172,16 +168,13 @@ export default function MembersPage() {
     setPage(1)
   }
 
-  const submitFilter = async (data: FieldValues) => {
-    const { cpf, name, clientCnpj, statusId } = data
+  const submitFilter = async (data: IFormValues) => {
+    const { searchInput, statusId } = data
     const query = new URLSearchParams()
 
-    const clientCnpjWithoutMask = removeCnpjMask(clientCnpj)
-    const memberCpfWithoutMask = removeCpfMask(cpf)
+    const searchInputWithoutMask = removeSpecialCharacters(searchInput)
 
-    if (cpf) query.append('cpf', memberCpfWithoutMask)
-    if (name) query.append('name', name)
-    if (clientCnpj) query.append('client-cnpj', clientCnpjWithoutMask)
+    if (searchInput) query.append('search-input', searchInputWithoutMask)
     if (statusId) query.append('status-id', statusId)
 
     setQuery(query)
@@ -354,6 +347,7 @@ export default function MembersPage() {
     fetchSystemData()
   }, [])
 
+  // --------------------------- RETURN ---------------------------
   return (
     <DashboardLayout
       title="Associados"
@@ -362,6 +356,8 @@ export default function MembersPage() {
     >
       <div className="flex justify-between w-full">
         <div className="flex gap-4">
+
+          {/* Create Members */}
           <AlertDialog>
             <AlertDialogTrigger className='rounded-md font-medium text-sm uppercase px-8 h-9 bg-primary text-white flex flex-col justify-center'>
               Cadastrar associado(s)
@@ -421,22 +417,27 @@ export default function MembersPage() {
               </AlertDialogDescription>
             </AlertDialogContent>
           </AlertDialog>
+
         </div>
       </div>
+
+      {/* Filter */}
       <Form { ...form }>
         <form
-          className='flex flex-row gap-4'
+          className='flex flex-row gap-4 items-end'
           onSubmit={form.handleSubmit((data) => submitFilter(data))}
         >
-          <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("cpf") } placeholder="CPF" type="text" />
+          {/* Search Input */}
+          <div className="flex flex-col grow space-y-1.5">
+            <Label className='bg-transparent text-sm' htmlFor="searchInput">Pesquisar</Label>
+            <Input
+              { ...form.register("searchInput") }
+              className='bg-white'
+              placeholder="CPF / Nome / CNPJ do Cliente" type="text"
+            />
           </div>
-          <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("clientCnpj") } placeholder="CNPJ do cliente" type="text" disabled={user?.roleId === ROLE.CLIENT_ADMIN} />
-          </div>
-          <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("name") } placeholder="Nome" type="text" />
-          </div>
+
+          {/* Status */}
           <div className="flex flex-col space-y-1.5 bg-white">
           <FormField
             control={form.control}
@@ -460,6 +461,8 @@ export default function MembersPage() {
             )}
           />
           </div>
+
+          {/* Buttons */}
           <Button className="w-28" type='submit'>
             Filtrar
           </Button>
@@ -475,8 +478,10 @@ export default function MembersPage() {
         </form>
       </Form>
 
+      {/* Table */}
       <DataTable columns={columns} data={members} />
 
+      {/* Pagination */}
       <Pagination>
         <PaginationContent>
           <PaginationItem>
