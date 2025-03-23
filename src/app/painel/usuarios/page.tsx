@@ -251,12 +251,13 @@ export default function UsersPage() {
           </div>
 
           {/* Status */}
-          <div className="flex flex-col space-y-1.5 bg-white">
+          <div className="flex flex-col space-y-1.5">
+          <Label className='bg-transparent text-sm' htmlFor="statusId">Status</Label>
             <FormField
               control={filterForm.control}
               name="statusId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className='bg-white'>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-28">
