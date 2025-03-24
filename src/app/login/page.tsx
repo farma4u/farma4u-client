@@ -131,6 +131,8 @@ export default function LoginPage() {
   )
 
   // ------------------------- Request Reset Password -------------------------
+  const [isRequestingResetPassword, setIsRequestingResetPassword] = useState<boolean>(false)
+
   const requestResetPasswordSchema = z.object({
     cpf: z
       .string({ required_error: 'O CPF é obrigatório.'})
@@ -148,11 +150,15 @@ export default function LoginPage() {
   })
 
   const submitRequestResetPassword = async ({ cpf }: RequestResetPasswordSchema) => {
+    setIsRequestingResetPassword(true)
+
     const response = await sendRequest({
       endpoint: '/auth/user/request-reset-password',
       method: 'POST',
       data: { cpf: removeCpfMask(cpf.trim()) },
     })
+
+    setIsRequestingResetPassword(false)
 
     if (response.error) {
       toast({
@@ -190,7 +196,13 @@ export default function LoginPage() {
         </CardContent>
 
         <CardFooter className="flex justify-center">
-          <Button disabled={!requestResetPasswordForm.formState.isValid} type="submit" className="w-full">Enviar</Button>
+          {
+            isRequestingResetPassword ? (
+              <Button disabled className="w-full">Redefinindo...</Button>
+            ) : (
+              <Button disabled={!requestResetPasswordForm.formState.isValid} type="submit" className="w-full">Enviar</Button>
+            )
+          }
         </CardFooter>
       </form>
     </Card>
