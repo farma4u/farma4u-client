@@ -1,6 +1,6 @@
 'use client'
 
-import { FieldValues, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { type ColumnDef } from "@tanstack/react-table"
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { applyCnpjMask, applyCpfMask, captalize, formatCurrency, formatDateTime, removeCnpjMask, removeCpfMask, removeSpecialCharacters } from '@/lib/utils'
+import { applyCnpjMask, applyCpfMask, captalize, formatCurrency, formatDateTime, removeSpecialCharacters } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DataTable } from '../../../components/DataTable'
@@ -176,9 +176,9 @@ export default function MembersPage() {
 
     const searchInputWithoutMask = removeSpecialCharacters(searchInput)
 
+    if (orderBy) query.append('order-by', orderBy)
     if (searchInput) query.append('search-input', searchInputWithoutMask)
     if (statusId) query.append('status-id', statusId)
-    if (orderBy) query.append('order-by', orderBy)
 
     setQuery(query)
     await fetchMembers(query)
@@ -466,28 +466,28 @@ export default function MembersPage() {
 
           {/* Status */}
           <div className="flex flex-col space-y-1.5">
-          <Label className='bg-transparent text-sm' htmlFor="statusId">Status</Label>
-          <FormField
-            control={form.control}
-            name="statusId"
-            render={({ field }) => (
-              <FormItem className='bg-white'>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-28">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="1">{STATUS[1]}</SelectItem>
-                    <SelectItem value="2">{STATUS[2]}</SelectItem>
-                    <SelectItem value="3">{STATUS[3]}</SelectItem>
-                    <SelectItem value="4">{STATUS[4]}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
+            <Label className='bg-transparent text-sm' htmlFor="statusId">Status</Label>
+            <FormField
+              control={form.control}
+              name="statusId"
+              render={({ field }) => (
+                <FormItem className='bg-white'>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-28">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1">{STATUS[1]}</SelectItem>
+                      <SelectItem value="2">{STATUS[2]}</SelectItem>
+                      <SelectItem value="3">{STATUS[3]}</SelectItem>
+                      <SelectItem value="4">{STATUS[4]}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Buttons */}

@@ -5,7 +5,7 @@ import { type ColumnDef } from "@tanstack/react-table"
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { applyCnpjMask, captalize, formatCurrency, formatDateTime, removeCnpjMask } from '@/lib/utils'
+import { applyCnpjMask, captalize, formatCurrency, formatDateTime, removeCnpjMask, removeSpecialCharacters } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DataTable } from '../../../components/DataTable'
@@ -30,33 +30,40 @@ import {
 import { sendRequest } from '@/lib/sendRequest'
 import { STATUS } from '@/lib/enums'
 import { useToast } from '@/components/ui/use-toast'
+import { Label } from '@/components/ui/label'
 
 interface IClient {
   id: string
   cnpj: string
   fantasyName: string
+  lumpSum: number
+  totalSavings: number
+  _count: {
+    members: number
+  }
+  statusId: number
   segment: string
   status: string
   createdAt: string
 }
 
 interface IFormValues {
-  cnpj: string
-  fantasyName: string
+  searchInput: string
+  orderBy: string
   statusId: string
 }
 
 const PAGINATION_LIMIT = 10
 const FORM_FILTER_DEFAULT_VALUES: IFormValues = {
-  cnpj: '',
-  fantasyName: '',
+  orderBy: 'totalSavings',
+  searchInput: '',
   statusId: '1'
 }
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<IClient[]>([])
   const [clientsCount, setClientsCount] = useState<number>(0)
-  // const [systemTotalSavings, setSystemTotalSavings] = useState<string>(formatCurrency(0))
+
   const [skip, setSkip] = useState<number>(0)
   const [page, setPage] = useState<number>(1)
   const [query, setQuery] = useState<URLSearchParams | null>(null)
@@ -82,8 +89,18 @@ export default function ClientsPage() {
       accessorKey: `segment`
     },
     {
-      header: `Status`,
-      accessorKey: `status`
+      header: `Valor de boleto`,
+      accessorKey: `lumpSum`,
+      cell: ({ row: { original: { lumpSum } } }) => formatCurrency(lumpSum)
+    },
+    {
+      header: `Base`,
+      accessorKey: `_count.members`
+    },
+    {
+      header: `Economia`,
+      accessorKey: `totalSavings`,
+      cell: ({ row: { original: { totalSavings } } }) => formatCurrency(totalSavings)
     },
     {
       header: `Criado em`,
@@ -122,13 +139,13 @@ export default function ClientsPage() {
   }
 
   const submitFilter = async (data: FieldValues) => {
-    const { cnpj, fantasyName, statusId } = data
+    const { searchInput, orderBy, statusId } = data
     const query = new URLSearchParams()
 
-    const cnpjWithoutMask = removeCnpjMask(cnpj)
+    const searchInputWithoutMask = removeSpecialCharacters(searchInput)
 
-    if (cnpj) query.append('cnpj', cnpjWithoutMask)
-    if (fantasyName) query.append('fantasy-name', fantasyName)
+    if (orderBy) query.append('order-by', orderBy)
+    if (searchInput) query.append('search-input', searchInputWithoutMask)
     if (statusId) query.append('status-id', statusId)
 
     setQuery(query)
@@ -169,7 +186,6 @@ export default function ClientsPage() {
 
       setClients([])
       setClientsCount(0)
-      // setSystemTotalSavings(formatCurrency(0))
 
       return
     }
@@ -188,47 +204,87 @@ export default function ClientsPage() {
     } else fetchClients()
   }, [skip])
 
+  // --------------------------- RETURN ---------------------------
   return (
     <DashboardLayout
       secondaryText={`Total: ${clientsCount} clientes`}
-      // systemTotalSavingsText={`Economia total do sistema: ${systemTotalSavings}`}
       title="Clientes"
     >
+
+      {/* Create Client */}
+      <div className="flex justify-between w-full">
+        <Button type="button" onClick={() => push('/painel/clientes/cadastrar-cliente')}>Cadastrar cliente</Button>
+      </div>
+
+      {/* Filter */}
       <Form { ...form }>
         <form
-          className='flex flex-row gap-4'
+          className='flex flex-row gap-4 items-end'
           onSubmit={form.handleSubmit((data) => submitFilter(data))}
         >
-          <Button type="button" onClick={() => push('/painel/clientes/cadastrar-cliente')}>Cadastrar cliente</Button>
-          <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("cnpj") } placeholder="CNPJ" type="text" />
+          {/* Search Input */}
+          <div className="flex flex-col grow space-y-1.5">
+            <Label className='bg-transparent text-sm' htmlFor="searchInput">Pesquisar</Label>
+            <Input
+              { ...form.register("searchInput") }
+              className='bg-white'
+              placeholder="CNPJ / Nome Fantasia / Razão Social" type="text"
+            />
           </div>
-          <div className="flex flex-col grow space-y-1.5 bg-white">
-            <Input { ...form.register("fantasyName") } placeholder="Nome Fantasia" type="text" />
+
+          {/* Order By */}
+          <div className="flex flex-col space-y-1.5">
+            <Label className='bg-transparent text-sm' htmlFor="orderBy">Ordenar por</Label>
+            <FormField
+              control={form.control}
+              name="orderBy"
+              render={({ field }) => (
+                <FormItem className='bg-white'>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-72">
+                        <SelectValue placeholder="Ordenar por" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="totalSavings">Maior economia</SelectItem>
+                      <SelectItem value="createdAt">Cadastrado mais recentemente</SelectItem>
+                      <SelectItem value="lumpSum">Maior valor de boleto</SelectItem>
+                      <SelectItem value="membersCount">Tamanho da Base</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
           </div>
-          <div className="flex flex-col space-y-1.5 bg-white">
-          <FormField
-            control={form.control}
-            name="statusId"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-28">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="1">{STATUS[1]}</SelectItem>
-                    <SelectItem value="2">{STATUS[2]}</SelectItem>
-                    <SelectItem value="3">{STATUS[3]}</SelectItem>
-                    <SelectItem value="4">{STATUS[4]}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
+
+          {/* Status */}
+          <div className="flex flex-col space-y-1.5">
+            <Label className='bg-transparent text-sm' htmlFor="statusId">Status</Label>
+            <FormField
+              control={form.control}
+              name="statusId"
+              render={({ field }) => (
+                <FormItem className='bg-white'>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-28">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1">{STATUS[1]}</SelectItem>
+                      <SelectItem value="2">{STATUS[2]}</SelectItem>
+                      <SelectItem value="3">{STATUS[3]}</SelectItem>
+                      <SelectItem value="4">{STATUS[4]}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
           </div>
+
+          {/* Buttons */}
           <Button className="w-28" type='submit'>
             Filtrar
           </Button>
