@@ -11,7 +11,7 @@ import {
   CommandList
 } from "@/components/ui/command"
 import logo from '../../public/logo-f4u-png.png'
-import { CircleUserRound, Store, Users } from 'lucide-react'
+import { Banknote, BanknoteIcon, CircleUserRound, LucideBanknote, Store, Users } from 'lucide-react'
 import UserCard from './UserCard'
 import { ROLE } from '@/lib/enums'
 import { useAuth } from '@/contexts/AuthContext'
@@ -23,7 +23,8 @@ export default function Sidebar() {
   const commandListItems = [
     { name: 'Associados', link: '/painel/associados', icon: <Users />, onlyMaster: false },
     { name: 'Clientes', link: '/painel/clientes', icon: <Store />, onlyMaster: true },
-    { name: 'Usuários', link: '/painel/usuarios', icon: <CircleUserRound />, onlyMaster: false }
+    { name: 'Usuários', link: '/painel/usuarios', icon: <CircleUserRound />, onlyMaster: false },
+    { name: 'Financeiro', link: '/painel/financeiro', icon: <Banknote />, onlyMaster: true }
   ]
 
   return (
