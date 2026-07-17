@@ -52,6 +52,7 @@ interface IClientDetailed {
   financePhoneNumber: string
   lumpSum: string
   unitValue: string
+  dueDay: number | null
   totalSavings: string
   contractUrl: string
   status: string
@@ -125,6 +126,12 @@ const updateClientFormSchema = z.object({
     .number({ required_error: 'O campo Valor Unitário é obrigatório.' })
     .gte(0, { message: 'O campo Valor Unitário deve ser maior ou igual a 0.' })
     .optional(),
+  dueDay: z.coerce
+    .number({ invalid_type_error: 'O campo Dia de Vencimento deve ser um número.' })
+    .gte(1, { message: 'O campo Dia de Vencimento deve ser maior ou igual a 1.' })
+    .lte(31, { message: 'O campo Dia de Vencimento deve ser menor ou igual a 31.' })
+    .nullable()
+    .optional(),
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
@@ -166,6 +173,7 @@ const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   financePhoneNumber: '',
   lumpSum: 0,
   unitValue: 0,
+  dueDay: 1,
   contractUrl: '',
   urlSite: '',
   isHinova: 'false',
@@ -210,6 +218,7 @@ export default function ClientDetailsPage() {
     lumpSum: client.lumpSum === 0 ? '-' : formatCurrency(client.lumpSum),
     unitValue: client.unitValue === 0 ? '-' : formatCurrency(client.unitValue),
     totalSavings: formatCurrency(client.totalSavings),
+    dueDay: client.dueDay,
     status: STATUS[client.statusId],
     createdAt: formatDateTime(client.createdAt),
   })
@@ -221,6 +230,7 @@ export default function ClientDetailsPage() {
     form.setValue('contractUrl', client.contractUrl)
     form.setValue('lumpSum', client.lumpSum)
     form.setValue('unitValue', client.unitValue)
+    form.setValue('dueDay', client.dueDay)
     form.setValue('managerName', client.managerName)
     form.setValue('managerEmail', client.managerEmail)
     form.setValue('managerPhoneNumber', client.managerPhoneNumber)
@@ -705,6 +715,17 @@ export default function ClientDetailsPage() {
 
                       <DetailsRow>
                         <InputContainer size="w-1/2">
+                          <Label htmlFor="dueDay">Dia de Vencimento</Label>
+                          <Input className="bg-white" max={31} min={1} type="number" { ...form.register("dueDay") } />
+                          {
+                            form.formState.errors.dueDay
+                              && <span className="text-red-500 text-xs">{form.formState.errors.dueDay.message}</span>
+                          }
+                        </InputContainer>
+                      </DetailsRow>
+
+                      <DetailsRow>
+                        <InputContainer size="w-1/2">
                           <Label htmlFor="isHinova">Tem SGA</Label>
                           <select className='h-8 px-4 border rounded-md bg-white' { ...form.register("isHinova") }>
                             <option value="false">Não</option>
@@ -902,6 +923,10 @@ export default function ClientDetailsPage() {
         <DetailsRow>
           <DetailsField label="Valor do Boleto" value={clientDetailed?.lumpSum} width="min-w-52 w-full" />
           <DetailsField label="Valor Unitário" value={clientDetailed?.unitValue} width="min-w-52 w-full" />
+          <DetailsField label="Dia de Vencimento" value={clientDetailed?.dueDay?.toString() ?? '-'} width="min-w-52 w-full" />
+        </DetailsRow>
+
+        <DetailsRow>
           <DetailsField label="URL do Contrato">
             <Link
               className="text-primary font-semibold"

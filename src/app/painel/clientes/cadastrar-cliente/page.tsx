@@ -78,6 +78,11 @@ const newClientFormSchema = z.object({
   unitValue: z
     .string({ required_error: 'O campo Valor Unitário é obrigatório.' })
     .optional(),
+  dueDay: z.coerce
+    .number({ invalid_type_error: 'O campo Dia de Vencimento deve ser um número.' })
+    .gte(1, { message: 'O campo Dia de Vencimento deve ser maior ou igual a 1.' })
+    .lte(31, { message: 'O campo Dia de Vencimento deve ser menor ou igual a 31.' })
+    .optional(),
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
@@ -123,6 +128,7 @@ const NEW_CLIENT_FORM_DEFAULT_VALUES: NewClientFormSchema = {
   financePhoneNumber: '',
   lumpSum: '0',
   unitValue: '0',
+  dueDay: 1,
   contractUrl: '',
   statusId: STATUS.Ativo,
   urlSite: '',
@@ -157,6 +163,7 @@ export default function RegisterClient() {
       .replace('(', '').replace(')', '').replace('-', '').replace(' ', '').replaceAll('_', ''),
     unitValue: transformCurrencyStringToNumber(unitValue),
     lumpSum: transformCurrencyStringToNumber(lumpSum),
+    dueDay: newClientData.dueDay,
     isHinova: newClientData.isHinova === 'true',
     hinovaToken: newClientData.hinovaToken ?? ''
 
@@ -362,6 +369,17 @@ export default function RegisterClient() {
               {
                 form.formState.errors.contractUrl
                   && <span className="text-red-500 text-xs">{form.formState.errors.contractUrl.message}</span>
+              }
+            </InputContainer>
+          </DetailsRow>
+
+          <DetailsRow>
+            <InputContainer size="w-1/3">
+              <Label htmlFor="dueDay">Dia de Vencimento</Label>
+              <Input className="bg-white" max={31} min={1} type="number" { ...form.register("dueDay") } />
+              {
+                form.formState.errors.dueDay
+                  && <span className="text-red-500 text-xs">{form.formState.errors.dueDay.message}</span>
               }
             </InputContainer>
           </DetailsRow>
