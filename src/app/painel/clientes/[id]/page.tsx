@@ -29,7 +29,7 @@ import { InputContainer } from '@/components/InputContainer'
 import InputMask from "react-input-mask"
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { sendRequest } from '@/lib/sendRequest'
 import { Separator } from '@/components/ui/separator'
 import { STATUS } from '@/lib/enums'
@@ -181,6 +181,7 @@ export default function ClientDetailsPage() {
   const [clientDetailed, setClientDetailed] = useState<IClientDetailed | null>(null);
   const [hotsiteDetailed, setHotsiteDetailed] = useState<IHotsiteDetailed | null>(null);
   const [fileSelected, setFileSelected] = useState<File | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
@@ -426,6 +427,7 @@ export default function ClientDetailsPage() {
       variant: "success"
     })
 
+    setDeleteConfirmation('')
     fetchClient(id)
   }
 
@@ -581,6 +583,35 @@ export default function ClientDetailsPage() {
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <Button onClick={() => activateClient(clientDetailed.id)}>
                       Ativar
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )
+          }
+          {
+            clientDetailed?.status === STATUS[3] && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  title='Restaurar como inativo'
+                  className='rounded-md w-9 h-9 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground flex flex-col justify-center'
+                >
+                  <RotateCcw className='mx-auto' />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Restaurar cliente como inativo?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Todos os associados do cliente também serão marcados como inativos.
+                    </AlertDialogDescription>
+                    <AlertDialogDescription>
+                      Depois disso, o cliente poderá ser ativado novamente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <Button onClick={() => inactivateClient(clientDetailed.id)}>
+                      Restaurar
                     </Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -826,12 +857,25 @@ export default function ClientDetailsPage() {
                       Todos os associados do cliente também serão excluídos!
                     </AlertDialogDescription>
                     <AlertDialogDescription>
-                      A operação <strong className='text-black'>não</strong> poderá ser desfeita!
+                      Essa ação poderá ser desfeita restaurando o cliente como inativo.
+                    </AlertDialogDescription>
+                    <AlertDialogDescription>
+                      Para confirmar, digite <strong className='text-black'>EXCLUIR</strong> abaixo.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+                  <Input
+                    className="bg-white"
+                    onChange={(event) => setDeleteConfirmation(event.target.value)}
+                    placeholder="Digite EXCLUIR"
+                    value={deleteConfirmation}
+                  />
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <Button variant="destructive" onClick={() => deleteClient(clientDetailed.id)}>
+                    <AlertDialogCancel onClick={() => setDeleteConfirmation('')}>Cancelar</AlertDialogCancel>
+                    <Button
+                      disabled={deleteConfirmation !== 'EXCLUIR'}
+                      variant="destructive"
+                      onClick={() => deleteClient(clientDetailed.id)}
+                    >
                       Excluir
                     </Button>
                   </AlertDialogFooter>
