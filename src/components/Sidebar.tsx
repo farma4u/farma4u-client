@@ -11,7 +11,7 @@ import {
   CommandList
 } from "@/components/ui/command"
 import logo from '../../public/logo-f4u-png.png'
-import { Banknote, BanknoteIcon, CircleUserRound, LucideBanknote, Store, Users } from 'lucide-react'
+import { Banknote, CircleUserRound, Store, Users } from 'lucide-react'
 import UserCard from './UserCard'
 import { ROLE } from '@/lib/enums'
 import { useAuth } from '@/contexts/AuthContext'
@@ -34,7 +34,7 @@ export default function Sidebar() {
         <Command>
         <CommandList>
             {
-              commandListItems.map((commandItem) => !(user?.roleId === ROLE.CLIENT_ADMIN && commandItem.onlyMaster) && (
+              commandListItems.map((commandItem) => !(user?.roleId !== ROLE.MASTER && commandItem.onlyMaster) && (
                 <Link href={commandItem.link} key={uuid()} passHref={true}>
                   <CommandItem className={`mb-4 pl-4 gap-4 ${pathname.includes(commandItem.link) && 'bg-accent'}`}>
                     {commandItem.icon}

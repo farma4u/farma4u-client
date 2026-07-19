@@ -29,7 +29,7 @@ import { InputContainer } from '@/components/InputContainer'
 import InputMask from "react-input-mask"
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { sendRequest } from '@/lib/sendRequest'
 import { Separator } from '@/components/ui/separator'
 import { STATUS } from '@/lib/enums'
@@ -52,6 +52,7 @@ interface IClientDetailed {
   financePhoneNumber: string
   lumpSum: string
   unitValue: string
+  dueDay: number | null
   totalSavings: string
   contractUrl: string
   status: string
@@ -125,6 +126,12 @@ const updateClientFormSchema = z.object({
     .number({ required_error: 'O campo Valor Unitário é obrigatório.' })
     .gte(0, { message: 'O campo Valor Unitário deve ser maior ou igual a 0.' })
     .optional(),
+  dueDay: z.coerce
+    .number({ invalid_type_error: 'O campo Dia de Vencimento deve ser um número.' })
+    .gte(1, { message: 'O campo Dia de Vencimento deve ser maior ou igual a 1.' })
+    .lte(31, { message: 'O campo Dia de Vencimento deve ser menor ou igual a 31.' })
+    .nullable()
+    .optional(),
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
@@ -166,6 +173,7 @@ const UPDATE_CLIENT_FORM_DEFAULT_VALUES = {
   financePhoneNumber: '',
   lumpSum: 0,
   unitValue: 0,
+  dueDay: 1,
   contractUrl: '',
   urlSite: '',
   isHinova: 'false',
@@ -181,6 +189,7 @@ export default function ClientDetailsPage() {
   const [clientDetailed, setClientDetailed] = useState<IClientDetailed | null>(null);
   const [hotsiteDetailed, setHotsiteDetailed] = useState<IHotsiteDetailed | null>(null);
   const [fileSelected, setFileSelected] = useState<File | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
@@ -209,6 +218,7 @@ export default function ClientDetailsPage() {
     lumpSum: client.lumpSum === 0 ? '-' : formatCurrency(client.lumpSum),
     unitValue: client.unitValue === 0 ? '-' : formatCurrency(client.unitValue),
     totalSavings: formatCurrency(client.totalSavings),
+    dueDay: client.dueDay,
     status: STATUS[client.statusId],
     createdAt: formatDateTime(client.createdAt),
   })
@@ -220,6 +230,7 @@ export default function ClientDetailsPage() {
     form.setValue('contractUrl', client.contractUrl)
     form.setValue('lumpSum', client.lumpSum)
     form.setValue('unitValue', client.unitValue)
+    form.setValue('dueDay', client.dueDay)
     form.setValue('managerName', client.managerName)
     form.setValue('managerEmail', client.managerEmail)
     form.setValue('managerPhoneNumber', client.managerPhoneNumber)
@@ -426,6 +437,7 @@ export default function ClientDetailsPage() {
       variant: "success"
     })
 
+    setDeleteConfirmation('')
     fetchClient(id)
   }
 
@@ -588,6 +600,35 @@ export default function ClientDetailsPage() {
             )
           }
           {
+            clientDetailed?.status === STATUS[3] && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  title='Restaurar como inativo'
+                  className='rounded-md w-9 h-9 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground flex flex-col justify-center'
+                >
+                  <RotateCcw className='mx-auto' />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Restaurar cliente como inativo?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Todos os associados do cliente também serão marcados como inativos.
+                    </AlertDialogDescription>
+                    <AlertDialogDescription>
+                      Depois disso, o cliente poderá ser ativado novamente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <Button onClick={() => inactivateClient(clientDetailed.id)}>
+                      Restaurar
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )
+          }
+          {
             clientDetailed
             && (
               <AlertDialog>
@@ -668,6 +709,17 @@ export default function ClientDetailsPage() {
                           {
                             form.formState.errors.unitValue
                               && <span className="text-red-500 text-xs">{form.formState.errors.unitValue.message}</span>
+                          }
+                        </InputContainer>
+                      </DetailsRow>
+
+                      <DetailsRow>
+                        <InputContainer size="w-1/2">
+                          <Label htmlFor="dueDay">Dia de Vencimento</Label>
+                          <Input className="bg-white" max={31} min={1} type="number" { ...form.register("dueDay") } />
+                          {
+                            form.formState.errors.dueDay
+                              && <span className="text-red-500 text-xs">{form.formState.errors.dueDay.message}</span>
                           }
                         </InputContainer>
                       </DetailsRow>
@@ -826,12 +878,25 @@ export default function ClientDetailsPage() {
                       Todos os associados do cliente também serão excluídos!
                     </AlertDialogDescription>
                     <AlertDialogDescription>
-                      A operação <strong className='text-black'>não</strong> poderá ser desfeita!
+                      Essa ação poderá ser desfeita restaurando o cliente como inativo.
+                    </AlertDialogDescription>
+                    <AlertDialogDescription>
+                      Para confirmar, digite <strong className='text-black'>EXCLUIR</strong> abaixo.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+                  <Input
+                    className="bg-white"
+                    onChange={(event) => setDeleteConfirmation(event.target.value)}
+                    placeholder="Digite EXCLUIR"
+                    value={deleteConfirmation}
+                  />
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <Button variant="destructive" onClick={() => deleteClient(clientDetailed.id)}>
+                    <AlertDialogCancel onClick={() => setDeleteConfirmation('')}>Cancelar</AlertDialogCancel>
+                    <Button
+                      disabled={deleteConfirmation !== 'EXCLUIR'}
+                      variant="destructive"
+                      onClick={() => deleteClient(clientDetailed.id)}
+                    >
                       Excluir
                     </Button>
                   </AlertDialogFooter>
@@ -858,6 +923,10 @@ export default function ClientDetailsPage() {
         <DetailsRow>
           <DetailsField label="Valor do Boleto" value={clientDetailed?.lumpSum} width="min-w-52 w-full" />
           <DetailsField label="Valor Unitário" value={clientDetailed?.unitValue} width="min-w-52 w-full" />
+          <DetailsField label="Dia de Vencimento" value={clientDetailed?.dueDay?.toString() ?? '-'} width="min-w-52 w-full" />
+        </DetailsRow>
+
+        <DetailsRow>
           <DetailsField label="URL do Contrato">
             <Link
               className="text-primary font-semibold"
