@@ -33,7 +33,7 @@ import { Input } from '@/components/ui/input'
 import { InputContainer } from '@/components/InputContainer'
 import InputMask from "react-input-mask"
 import { Label } from '@/components/ui/label'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { sendRequest } from '@/lib/sendRequest'
 import { Separator } from '@/components/ui/separator'
 import { ROLE, STATUS } from '@/lib/enums'
@@ -144,6 +144,7 @@ const UPDATE_MEMBER_FORM_DEFAULT_VALUES: UpdateMemberFormSchema = {
 
 export default function MemberDetailsPage() {
   const [memberDetailed, setMemberDetailed] = useState<IMemberDetailed | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
@@ -269,6 +270,7 @@ export default function MemberDetailsPage() {
       variant: "success"
     })
 
+    setDeleteConfirmation('')
     fetchMember(id)
   }
 
@@ -430,6 +432,32 @@ export default function MemberDetailsPage() {
             )
           }
           {
+            memberDetailed?.status === STATUS[3] && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  title='Restaurar como inativo'
+                  className='rounded-md w-9 h-9 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground flex flex-col justify-center'
+                >
+                  <RotateCcw className='mx-auto' />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Restaurar associado como inativo?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Depois disso, o associado poderá ser ativado novamente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <Button onClick={() => inactivateMember(memberDetailed.id)}>
+                      Restaurar
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )
+          }
+          {
             memberDetailed
             && (
               <AlertDialog>
@@ -516,7 +544,7 @@ export default function MemberDetailsPage() {
           }
           {
             memberDetailed
-            && [STATUS[1], STATUS[2]].includes(memberDetailed.status as string)
+            && [STATUS[1], STATUS[2], STATUS[4]].includes(memberDetailed.status as string)
             && (
               <AlertDialog>
                 <AlertDialogTrigger title='Excluir' className='rounded-md w-9 h-9 bg-destructive text-white flex flex-col justify-center'>
@@ -526,12 +554,25 @@ export default function MemberDetailsPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar exclusão?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      A operação <strong className='text-black'>não</strong> poderá ser desfeita!
+                      Essa ação poderá ser desfeita restaurando o associado como inativo.
+                    </AlertDialogDescription>
+                    <AlertDialogDescription>
+                      Para confirmar, digite <strong className='text-black'>EXCLUIR</strong> abaixo.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+                  <Input
+                    className="bg-white"
+                    onChange={(event) => setDeleteConfirmation(event.target.value)}
+                    placeholder="Digite EXCLUIR"
+                    value={deleteConfirmation}
+                  />
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <Button variant="destructive" onClick={() => deleteMember(memberDetailed.id)}>
+                    <AlertDialogCancel onClick={() => setDeleteConfirmation('')}>Cancelar</AlertDialogCancel>
+                    <Button
+                      disabled={deleteConfirmation !== 'EXCLUIR'}
+                      variant="destructive"
+                      onClick={() => deleteMember(memberDetailed.id)}
+                    >
                       Excluir
                     </Button>
                   </AlertDialogFooter>
