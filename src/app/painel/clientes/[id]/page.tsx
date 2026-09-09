@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { applyCnpjMask, captalize, formatCurrency, formatDateTime, formatPhoneNumber } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import CurrencyInput from 'react-currency-input-field'
 import DashboardLayout from '@/components/DashboardLayout'
 import { DetailsField } from '@/components/DetailsField'
 import { DetailsRow } from '@/components/DetailsRow'
@@ -328,6 +327,10 @@ export default function ClientDetailsPage() {
       })
       
       fetchClient(params.id as string);
+      toast({
+        description: response.message,
+        variant: "success"
+      })
       return
     }
     
@@ -339,6 +342,10 @@ export default function ClientDetailsPage() {
     })
     
     fetchClient(params.id as string)
+    toast({
+      description: response.message,
+      variant: "success"
+    })
   }
 
  
@@ -683,13 +690,13 @@ export default function ClientDetailsPage() {
                       <DetailsRow>
                         <InputContainer size="w-1/2">
                           <Label htmlFor="lumpSum">Valor do Boleto</Label>
-                          <CurrencyInput
-                            { ...form.register("lumpSum") }
+                          <Input
                             className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            allowNegativeValue={false}
-                            fixedDecimalLength={2}
-                            disableGroupSeparators={true}
-                            placeholder="00.00"
+                            min={0}
+                            placeholder="0,00"
+                            step="0.01"
+                            type="number"
+                            { ...form.register("lumpSum") }
                           />
                           {
                             form.formState.errors.lumpSum
@@ -698,13 +705,13 @@ export default function ClientDetailsPage() {
                         </InputContainer>
                         <InputContainer size="w-1/2">
                           <Label htmlFor="unitValue">Valor Unitário</Label>
-                          <CurrencyInput
-                            { ...form.register("unitValue") }
+                          <Input
                             className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            allowNegativeValue={false}
-                            fixedDecimalLength={2}
-                            disableGroupSeparators={true}
-                            placeholder="00.00"
+                            min={0}
+                            placeholder="0,00"
+                            step="0.01"
+                            type="number"
+                            { ...form.register("unitValue") }
                           />
                           {
                             form.formState.errors.unitValue
