@@ -125,19 +125,25 @@ const updateClientFormSchema = z.object({
     .number({ required_error: 'O campo Valor Unitário é obrigatório.' })
     .gte(0, { message: 'O campo Valor Unitário deve ser maior ou igual a 0.' })
     .optional(),
-  dueDay: z.coerce
-    .number({ invalid_type_error: 'O campo Dia de Vencimento deve ser um número.' })
-    .gte(1, { message: 'O campo Dia de Vencimento deve ser maior ou igual a 1.' })
-    .lte(31, { message: 'O campo Dia de Vencimento deve ser menor ou igual a 31.' })
-    .nullable()
-    .optional(),
+  dueDay: z.preprocess(
+    (value) => value === '' || value === undefined ? null : value,
+    z.coerce
+      .number({ invalid_type_error: 'O campo Dia de Vencimento deve ser um número.' })
+      .gte(1, { message: 'O campo Dia de Vencimento deve ser maior ou igual a 1.' })
+      .lte(31, { message: 'O campo Dia de Vencimento deve ser menor ou igual a 31.' })
+      .nullable()
+      .optional()
+  ),
   contractUrl: z
     .string({ required_error: 'O campo URL do Contrato é obrigatório.' })
     .url({ message: 'O campo URL do Contrato deve ser uma URL válida.' })
+    .or(z.literal(''))
     .optional(),
   urlSite: z
     .string({ required_error: 'O campo URL Site é obrigatório.' })
-    .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' }),
+    .min(3, {  message: 'O campo URL Site deve ter pelo menos 3 caracteres.' })
+    .or(z.literal(''))
+    .optional(),
   isHinova: z
     .string({ required_error: 'O campo Tem SGA é obrigatório.' }),
   hinovaToken: z
@@ -146,13 +152,18 @@ const updateClientFormSchema = z.object({
   primaryColor: z
     .string({ required_error: 'O campo Cor Primária é obrigatório.' })
     .min(3, { message: 'O campo Cor Primária deve ter pelo menos 3 caracteres.' })
-    .max(7, { message: 'O campo Cor Primária deve ter no máximo 7 caracteres.' }),
+    .max(7, { message: 'O campo Cor Primária deve ter no máximo 7 caracteres.' })
+    .or(z.literal(''))
+    .optional(),
   secondColor: z 
     .string({ required_error: 'O campo Cor Secundária é obrigatório.' })
     .min(3, { message: 'O campo Cor Secundária deve ter pelo menos 3 caracteres.' })
-    .max(7, { message: 'O campo Cor Secundária deve ter no máximo 7 caracteres.' }),
+    .max(7, { message: 'O campo Cor Secundária deve ter no máximo 7 caracteres.' })
+    .or(z.literal(''))
+    .optional(),
   image: z
     .string()
+    .optional()
 })
 
 type UpdateClientFormSchema = z.infer<typeof updateClientFormSchema>
@@ -192,7 +203,7 @@ export default function ClientDetailsPage() {
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
-  const [file, setFile] = useState('');
+  const [file, setFile] = useState<File | null>(null);
 
   const form = useForm<UpdateClientFormSchema>({
     mode: 'onBlur',
@@ -314,10 +325,10 @@ export default function ClientDetailsPage() {
     });
 
     const formData = new FormData()
-    formData.append('image', file)
-    formData.append('urlSite', client.urlSite)
-    formData.append('primaryColor', client.primaryColor)
-    formData.append('secondColor', client.secondColor);
+    if (file) formData.append('image', file)
+    if (client.urlSite) formData.append('urlSite', client.urlSite)
+    if (client.primaryColor) formData.append('primaryColor', client.primaryColor)
+    if (client.secondColor) formData.append('secondColor', client.secondColor);
     
     if (!hotsiteGetResponse.error){
       const hotsiteResponse = await sendHotsiteRequest({
