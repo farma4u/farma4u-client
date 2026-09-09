@@ -199,6 +199,7 @@ export default function ClientDetailsPage() {
   const [hotsiteDetailed, setHotsiteDetailed] = useState<IHotsiteDetailed | null>(null);
   const [fileSelected, setFileSelected] = useState<File | null>(null)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const params = useParams()
   const { push } = useRouter()
   const { toast } = useToast()
@@ -318,42 +319,54 @@ export default function ClientDetailsPage() {
       return
     }
 
-    const hotsiteGetResponse = await sendHotsiteRequest<HotsiteDetailedFromAPI>({
-      endpoint: `/find/${params.id}`,
-      method: 'GET',
-    });
-
     const formData = new FormData()
     if (file) formData.append('image', file)
     if (client.urlSite) formData.append('urlSite', client.urlSite)
     if (client.primaryColor) formData.append('primaryColor', client.primaryColor)
     if (client.secondColor) formData.append('secondColor', client.secondColor);
-    
-    if (!hotsiteGetResponse.error){
-      const hotsiteResponse = await sendHotsiteRequest({
-        endpoint:  `/updateSite/${params.id}`,
-        method: 'PUT',
-        data: formData
-      })
-      
-      fetchClient(params.id as string);
+
+    const shouldUpdateHotsite = Boolean(
+      file
+      || client.urlSite
+      || client.primaryColor
+      || client.secondColor
+    )
+
+    if (!shouldUpdateHotsite) {
+      await fetchClient(params.id as string)
+      setIsEditDialogOpen(false)
       toast({
-        description: response.message,
+        description: 'Cliente atualizado com sucesso.',
+        variant: "success"
+      })
+      return
+    }
+
+    const hotsiteGetResponse = await sendHotsiteRequest<HotsiteDetailedFromAPI>({
+      endpoint: `/find/${params.id}`,
+      method: 'GET',
+    });
+
+    if (hotsiteGetResponse.error) {
+      await fetchClient(params.id as string)
+      setIsEditDialogOpen(false)
+      toast({
+        description: 'Cliente atualizado com sucesso.',
         variant: "success"
       })
       return
     }
     
-    formData.append('id', String(params.id));
-    const hotsiteResponse = await sendHotsiteRequest<{ client: CLientDetailedFromAPI }>({
-      endpoint: '/addSite',
-      method: 'POST',
+    await sendHotsiteRequest({
+      endpoint:  `/updateSite/${params.id}`,
+      method: 'PUT',
       data: formData
     })
     
-    fetchClient(params.id as string)
+    await fetchClient(params.id as string)
+    setIsEditDialogOpen(false)
     toast({
-      description: response.message,
+      description: 'Cliente atualizado com sucesso.',
       variant: "success"
     })
   }
@@ -594,7 +607,7 @@ export default function ClientDetailsPage() {
           {
             clientDetailed &&
             [STATUS[2], STATUS[4]].includes(clientDetailed?.status as string) && (
-              <AlertDialog>
+              <AlertDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <AlertDialogTrigger className='uppercase px-8 h-9 rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground'>Ativar</AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
