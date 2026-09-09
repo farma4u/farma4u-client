@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -206,7 +205,7 @@ export default function ClientDetailsPage() {
   const [file, setFile] = useState<File | null>(null);
 
   const form = useForm<UpdateClientFormSchema>({
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: UPDATE_CLIENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(updateClientFormSchema)
   })
@@ -871,9 +870,9 @@ export default function ClientDetailsPage() {
                       </DetailsRow>
                       <AlertDialogFooter>
                         <AlertDialogCancel type="button">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction type="submit" disabled={!form.formState.isValid}>
+                        <Button type="submit">
                           Confirmar
-                        </AlertDialogAction>
+                        </Button>
                       </AlertDialogFooter>
                     </form>
                   </Form>
